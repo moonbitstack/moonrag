@@ -1,1 +1,9 @@
-// Documents, and the contracts for splitting, embedding, storing and retrieving them.
+// Documents, vectors and retrieval. Embeddings come through a contract.
+
+import {
+  "moonbitlang/core/json",
+}
+
+import {
+  "moonbitlang/async",
+} for "test"

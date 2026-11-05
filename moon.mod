@@ -25,3 +25,7 @@ keywords = [
 description = "Documents, splitting, vector stores and retrieval for MoonBit. Embeddings come through a contract, so no model is needed."
 
 source = "src"
+
+import {
+  "moonbitlang/async@0.22.5",
+}
