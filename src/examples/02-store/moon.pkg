@@ -1,0 +1,9 @@
+import {
+  "moonbitstack/moonrag",
+  "moonbitlang/async",
+  "moonbitlang/core/json",
+}
+
+pkgtype(kind: "executable")
+
+supported_targets = "all-wasm-gc"
