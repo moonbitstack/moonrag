@@ -1,0 +1,14 @@
+// Incremental indexing: what is already stored, what changed, and what has gone away.
+
+import {
+  "moonbitstack/moonbase/base16",
+  "moonbitstack/mooncrypt/hash/sha2",
+  "moonbitstack/moonrag",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/json",
+}
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/core/json",
+} for "wbtest"

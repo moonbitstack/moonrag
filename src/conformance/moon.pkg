@@ -3,3 +3,12 @@
 import {
   "moonbitstack/moonrag/split",
 } for "wbtest"
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitstack/moonrag/index",
+  "moonbitstack/moonrag/load",
+  "moonbitstack/moonrag/split",
+  "moonbitlang/async",
+  "moonbitlang/core/json",
+} for "test"

@@ -1,0 +1,27 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonrag/load/file"
+
+import {
+  "moonbitstack/moonrag",
+}
+
+// Values
+pub async fn csv(String, has_header? : Bool) -> Array[@moonrag.Document]
+
+pub async fn html(String) -> Array[@moonrag.Document]
+
+pub async fn json(String, text_key? : String) -> Array[@moonrag.Document]
+
+pub async fn markdown(String) -> Array[@moonrag.Document]
+
+pub async fn read(String) -> String
+
+pub async fn text(String) -> Array[@moonrag.Document]
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

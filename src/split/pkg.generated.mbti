@@ -7,6 +7,9 @@ import {
 }
 
 // Values
+pub fn html_text(String) -> String
+
+pub fn html_title(String) -> String?
 
 // Errors
 

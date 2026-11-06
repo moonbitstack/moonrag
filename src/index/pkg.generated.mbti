@@ -1,0 +1,43 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonrag/index"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitstack/moonrag",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub(all) enum Cleanup {
+  Incremental
+  Full
+  None
+}
+
+pub struct Indexer {
+  store : &@moonrag.VectorStore
+  source_key : String
+  mut records : Array[(String, Bytes, String?)]
+}
+pub fn Indexer::ids(Self) -> Array[String]
+pub async fn Indexer::index(Self, Array[@moonrag.Document], cleanup? : Cleanup) -> Stats
+pub fn Indexer::len(Self) -> Int32
+pub fn Indexer::new(&@moonrag.VectorStore, source_key? : String) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Stats {
+  mut added : Int32
+  mut updated : Int32
+  mut skipped : Int32
+  mut deleted : Int32
+}
+pub fn Stats::equal(Self, Self) -> Bool
+pub fn Stats::not_equal(Self, Self) -> Bool
+pub fn Stats::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

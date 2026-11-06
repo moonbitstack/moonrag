@@ -1,0 +1,20 @@
+// Reading a file from disk and handing it to the matching loader.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitstack/moonrag/load",
+  "moonbitlang/async/fs",
+}
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/fs",
+} for "test"
+
+// File I/O needs an operating system; a browser build reads text it was given instead.
+
+supported_targets = "all-js-wasm-gc"
+
+options(
+  targets: { "file_wbtest.mbt": [ "native" ] },
+)

@@ -277,3 +277,33 @@ pub impl @moonrag.Splitter for HtmlSplitter with fn split(self, document) {
 
 ///|
 pub extend HtmlSplitter with @moonrag.Splitter::{split}
+
+///|
+/// The readable text of a HTML page: block boundaries become line breaks, markup, scripts, styles and
+/// headings-of-nothing are dropped. A loader and a splitter both read a page through this, so they
+/// cannot disagree about what it says.
+pub fn html_text(html : String) -> String {
+  let parts : Array[String] = []
+  for draft in outline_of(html) {
+    parts.push(draft.text)
+  }
+  parts.join("\n\n")
+}
+
+///|
+/// The page title: `<title>`, or the first `h1` when the page has none.
+pub fn html_title(html : String) -> String? {
+  let document = @html.loads(html)
+  for tag in ["title", "h1"] {
+    let candidates = document.by_tag(tag)
+    if candidates.length() > 0 {
+      let title = collapse_whitespace(candidates.first().text())
+        .trim()
+        .to_owned()
+      if title != "" {
+        return Some(title)
+      }
+    }
+  }
+  None
+}

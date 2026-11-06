@@ -1,0 +1,12 @@
+// Reading documents out of text, CSV, JSON, Markdown and HTML.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitstack/moonrag/split",
+  "moonbitlang/core/json",
+}
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/core/json",
+} for "wbtest"

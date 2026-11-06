@@ -1,0 +1,58 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonrag/load"
+
+import {
+  "moonbitstack/moonrag",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct CsvLoader {
+  source : String
+  text : String
+  has_header : Bool
+  delimiter : Char
+}
+pub async fn CsvLoader::load(Self) -> Array[@moonrag.Document]
+pub fn CsvLoader::new(String, String, has_header? : Bool, delimiter? : Char) -> Self
+pub impl @moonrag.Loader for CsvLoader
+
+pub struct HtmlLoader {
+  source : String
+  text : String
+}
+pub async fn HtmlLoader::load(Self) -> Array[@moonrag.Document]
+pub fn HtmlLoader::new(String, String) -> Self
+pub impl @moonrag.Loader for HtmlLoader
+
+pub struct JsonLoader {
+  source : String
+  text : String
+  text_key : String?
+}
+pub async fn JsonLoader::load(Self) -> Array[@moonrag.Document]
+pub fn JsonLoader::new(String, String, text_key? : String) -> Self
+pub impl @moonrag.Loader for JsonLoader
+
+pub struct MarkdownLoader {
+  source : String
+  text : String
+}
+pub async fn MarkdownLoader::load(Self) -> Array[@moonrag.Document]
+pub fn MarkdownLoader::new(String, String) -> Self
+pub impl @moonrag.Loader for MarkdownLoader
+
+pub struct TextLoader {
+  source : String
+  text : String
+}
+pub async fn TextLoader::load(Self) -> Array[@moonrag.Document]
+pub fn TextLoader::new(String, String) -> Self
+pub impl @moonrag.Loader for TextLoader
+
+// Type aliases
+
+// Traits
