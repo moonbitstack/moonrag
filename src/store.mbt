@@ -92,14 +92,15 @@ pub fn InMemoryVectorStore::ids(self : InMemoryVectorStore) -> Array[String] {
 }
 
 ///|
-/// The document stored under `id`, or `None`.
+/// The document stored under `id`, or `None`. The returned document carries the id it is stored
+/// under, so it can be deleted or refetched without keeping the id beside it.
 pub fn InMemoryVectorStore::get(
   self : InMemoryVectorStore,
   id : String,
 ) -> Document? {
   for entry in self.entries {
     if entry.0 == id {
-      return Some(entry.1)
+      return Some({ ..entry.1, id: Some(entry.0), })
     }
   }
   None
@@ -145,6 +146,8 @@ pub impl VectorStore for InMemoryVectorStore with fn delete(self, ids) {
 }
 
 ///|
+/// Hits carry the id each document is stored under — a caller that wants to delete one does not have
+/// to remember which id came back from `add`.
 pub impl VectorStore for InMemoryVectorStore with fn search(
   self,
   vector,
@@ -157,7 +160,7 @@ pub impl VectorStore for InMemoryVectorStore with fn search(
       continue
     }
     let score = cosine_similarity(vector, entry.2[:])
-    hits.push({ document: entry.1, score, })
+    hits.push({ document: { ..entry.1, id: Some(entry.0), }, score, })
   }
   rank(hits, limit)
 }

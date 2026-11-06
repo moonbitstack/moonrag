@@ -298,3 +298,16 @@ async test "an empty id is refused" {
   }
   assert_true(raised)
 }
+
+///|
+async test "hits and lookups carry the id the document is stored under" {
+  let embedder : &@moonrag.Embedder = TableEmbedder::new([("a", [1.0, 0.0])])
+  let store = @moonrag.InMemoryVectorStore::new(embedder)
+  let _ = store.add([@moonrag.Document::new("a")])
+  assert_eq(store.get("doc-0").unwrap().id, Some("doc-0"))
+  let hits = store.search([1.0, 0.0][:], limit=1)
+  assert_eq(hits[0].document.id, Some("doc-0"))
+  // The id in the hit is the one the store keys by, so it can be deleted without a lookup.
+  store.delete([hits[0].document.id.unwrap()][:])
+  assert_eq(store.len(), 0)
+}
