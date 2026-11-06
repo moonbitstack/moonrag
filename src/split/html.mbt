@@ -6,9 +6,9 @@
 ///|
 /// Cuts an HTML document into one chunk per heading-delimited section.
 ///
-/// Each chunk's metadata carries the headings above it as `h1` … `h6`, the path LangChain's
-/// `HTMLHeaderTextSplitter` also records, and a section longer than `chunk_size` is cut again by the
-/// recursive splitter with the same heading path, so no chunk outgrows an embedding window.
+/// Each chunk's metadata carries the headings above it as `h1` … `h6`, so a retrieved chunk can say
+/// which section it belongs to. A section longer than `chunk_size` is cut again by the recursive
+/// splitter with the same heading path, so no chunk outgrows an embedding window.
 pub struct HtmlSplitter {
   chunk_size : Int32
   inner : RecursiveSplitter

@@ -1,8 +1,8 @@
 // Recursive character splitting: try the coarsest separator, and any piece still too long is split
-// again by the next one, down to single characters. The rules below follow the reference
-// implementation in `langchain-text-splitters` 1.1.3 case for case — same separator search, same
-// "keep the separator" placement, same overlap arithmetic — because a splitter that differs by one
-// character changes every embedding downstream.
+// again by the next one, down to single characters. Every rule here — which separator is searched
+// for, where the separator is kept, how the overlap is popped back — is pinned by the differential
+// fixtures in src/conformance, because a splitter that differs by one character changes every
+// embedding downstream.
 
 ///|
 /// Where a separator goes relative to the piece it separated.
@@ -33,9 +33,9 @@ pub struct RecursiveSplitter {
 /// `measure` says otherwise.
 ///
 /// `chunk_overlap` carries that many units of the previous piece into the next one so a sentence cut
-/// across a boundary is still readable in one of them; defaults follow `langchain-text-splitters`
-/// 1.1.3 (`4000` and `200`). `keep_separator` decides whether the separator stays at the start of the
-/// following piece, at the end of the preceding one, or is dropped.
+/// across a boundary is still readable in one of them; the defaults (`4000` and `200`) are the ones
+/// most chunking pipelines assume. `keep_separator` decides whether the separator stays at the start
+/// of the following piece, at the end of the preceding one, or is dropped.
 ///
 /// Raises `Empty` when `chunk_size` is not positive, and `Exceeded` when `chunk_overlap` is negative
 /// or larger than `chunk_size`.
