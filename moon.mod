@@ -28,4 +28,5 @@ source = "src"
 
 import {
   "moonbitlang/async@0.22.5",
+  "moonbitstack/moonxml@0.1.4",
 }

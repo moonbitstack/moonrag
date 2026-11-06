@@ -1,7 +1,0 @@
-
-import {
-  "moonbitstack/moonrag",
-  "moonbitlang/async",
-}
-
-pkgtype(kind: "executable")

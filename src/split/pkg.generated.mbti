@@ -1,0 +1,58 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonrag/split"
+
+import {
+  "moonbitlang/core/json",
+  "moonbitstack/moonrag",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct HtmlSplitter {
+  chunk_size : Int32
+  inner : RecursiveSplitter
+}
+pub fn HtmlSplitter::new(chunk_size? : Int32, chunk_overlap? : Int32, strip_whitespace? : Bool) -> Self raise
+pub fn HtmlSplitter::split(Self, @moonrag.Document) -> Array[@moonrag.Document]
+pub fn HtmlSplitter::split_html(Self, String, meta? : Map[String, @json.Json]) -> Array[@moonrag.Document]
+pub impl @moonrag.Splitter for HtmlSplitter
+
+pub(all) enum KeepSeparator {
+  Drop
+  Start
+  End
+}
+
+pub struct RecursiveSplitter {
+  chunk_size : Int32
+  chunk_overlap : Int32
+  separators : Array[String]
+  keep_separator : KeepSeparator
+  strip_whitespace : Bool
+  add_start_index : Bool
+  measure : (StringView) -> Int32
+}
+pub fn RecursiveSplitter::new(chunk_size? : Int32, chunk_overlap? : Int32, separators? : Array[String], keep_separator? : KeepSeparator, strip_whitespace? : Bool, add_start_index? : Bool, measure? : (StringView) -> Int32) -> Self raise
+pub fn RecursiveSplitter::split(Self, @moonrag.Document) -> Array[@moonrag.Document]
+pub fn RecursiveSplitter::split_text(Self, String) -> Array[String]
+pub fn RecursiveSplitter::split_with_offsets(Self, String) -> Array[(String, Int32)]
+pub impl @moonrag.Splitter for RecursiveSplitter
+
+pub struct TokenSplitter {
+  chunk_size : Int32
+  chunk_overlap : Int32
+  separator : String
+  strip_whitespace : Bool
+  measure : (StringView) -> Int32
+}
+pub fn TokenSplitter::new((StringView) -> Int32, chunk_size? : Int32, chunk_overlap? : Int32, separator? : String, strip_whitespace? : Bool) -> Self raise
+pub fn TokenSplitter::split(Self, @moonrag.Document) -> Array[@moonrag.Document]
+pub fn TokenSplitter::split_text(Self, String) -> Array[String]
+pub impl @moonrag.Splitter for TokenSplitter
+
+// Type aliases
+
+// Traits

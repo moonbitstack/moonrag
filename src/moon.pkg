@@ -1,9 +1,16 @@
 // Documents, vectors and retrieval. Embeddings come through a contract.
 
 import {
+  "moonbitlang/core/encoding/utf8",
   "moonbitlang/core/json",
 }
 
 import {
   "moonbitlang/async",
+  "moonbitlang/core/json",
 } for "test"
+
+import {
+  "moonbitlang/async",
+  "moonbitlang/core/json",
+} for "wbtest"

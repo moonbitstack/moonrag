@@ -1,12 +1,171 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbitstack/moonrag"
 
+import {
+  "moonbitlang/core/debug",
+  "moonbitlang/core/json",
+}
+
 // Values
+pub fn cosine_similarity(ArrayView[Double], ArrayView[Double]) -> Double raise
+
+pub fn dot_product(ArrayView[Double], ArrayView[Double]) -> Double raise
+
+pub fn euclidean_distance(ArrayView[Double], ArrayView[Double]) -> Double raise
+
+pub fn magnitude(ArrayView[Double]) -> Double
+
+pub fn mmr(ArrayView[Double], ArrayView[Candidate], limit~ : Int32, lambda? : Double) -> Array[Scored] raise
+
+pub fn normalized(ArrayView[Double]) -> Array[Double]
 
 // Errors
+#derive(Eq, @debug.Debug)
+pub(all) suberror Refused {
+  Mismatch(got~ : Int32, want~ : Int32)
+  Empty(what~ : String)
+  Exceeded(limit~ : Int32, got~ : Int32)
+  Malformed(at~ : Int32, why~ : String)
+  Unsupported(what~ : String)
+}
+pub fn Refused::equal(Self, Self) -> Bool
+pub fn Refused::not_equal(Self, Self) -> Bool
+pub fn Refused::to_repr(Self) -> @debug.Repr
 
 // Types and methods
+pub(all) struct Candidate {
+  document : Document
+  vector : Array[Double]
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Document {
+  id : String?
+  text : String
+  meta : Map[String, @json.Json]
+}
+pub fn Document::derived(Self, Int32, String, start_index? : Int32) -> Self
+pub fn Document::equal(Self, Self) -> Bool
+pub fn Document::from_json(@json.Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn Document::meta_of(Self, String) -> @json.Json?
+pub fn Document::new(String, id? : String, meta? : Map[String, @json.Json]) -> Self
+pub fn Document::not_equal(Self, Self) -> Bool
+pub fn Document::set_meta(Self, String, @json.Json) -> Self
+pub fn Document::str_meta(Self, String) -> String?
+pub fn Document::to_json(Self) -> @json.Json
+pub fn Document::to_repr(Self) -> @debug.Repr
+pub fn Document::with_id(Self, String) -> Self
+pub fn Document::with_meta(Self, Map[String, @json.Json]) -> Self
+pub impl @json.FromJson for Document
+pub impl @json.ToJson for Document
+
+#derive(Eq, @debug.Debug)
+pub(all) enum Filter {
+  Equal(String, @json.Json)
+  OneOf(String, Array[@json.Json])
+  Exists(String)
+  Compare(String, Order, Double)
+  All(Array[Filter])
+  Any(Array[Filter])
+  Not(Filter)
+}
+pub fn Filter::equal(Self, Self) -> Bool
+pub fn Filter::matches(Self, Document) -> Bool
+pub fn Filter::not_equal(Self, Self) -> Bool
+pub fn Filter::to_repr(Self) -> @debug.Repr
+
+#derive(@debug.Debug)
+pub struct HashingEmbedder {
+  dimension : Int32
+}
+pub async fn HashingEmbedder::embed(Self, ArrayView[String]) -> Array[Array[Double]]
+pub fn HashingEmbedder::new(dimension? : Int32) -> Self raise
+pub fn HashingEmbedder::to_repr(Self) -> @debug.Repr
+pub impl Embedder for HashingEmbedder
+
+pub struct InMemoryVectorStore {
+  embedder : &Embedder
+  mut entries : Array[(String, Document, Array[Double])]
+  mut counter : Int32
+}
+pub async fn InMemoryVectorStore::add(Self, Array[Document]) -> Array[String]
+pub fn InMemoryVectorStore::add_vectors(Self, Array[Document], ArrayView[Array[Double]]) -> Array[String] raise
+pub fn InMemoryVectorStore::clear(Self) -> Unit
+pub async fn InMemoryVectorStore::delete(Self, ArrayView[String]) -> Unit
+pub fn InMemoryVectorStore::get(Self, String) -> Document?
+pub fn InMemoryVectorStore::ids(Self) -> Array[String]
+pub fn InMemoryVectorStore::len(Self) -> Int32
+pub fn InMemoryVectorStore::new(&Embedder) -> Self
+pub async fn InMemoryVectorStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : Filter) -> Array[Scored]
+pub fn InMemoryVectorStore::vector_of(Self, String) -> Array[Double]?
+pub impl VectorStore for InMemoryVectorStore
+
+pub struct MmrRetriever {
+  embedder : &Embedder
+  store : &VectorStore
+  filter : Filter?
+  lambda : Double
+  fetch_limit : Int32
+}
+pub fn MmrRetriever::new(&Embedder, &VectorStore, lambda? : Double, fetch_limit? : Int32, filter? : Filter) -> Self
+pub async fn MmrRetriever::retrieve(Self, String, limit~ : Int32) -> Array[Scored]
+pub impl Retriever for MmrRetriever
+
+#derive(Eq, @debug.Debug)
+pub(all) enum Order {
+  Less
+  AtMost
+  AtLeast
+  Greater
+}
+pub fn Order::equal(Self, Self) -> Bool
+pub fn Order::not_equal(Self, Self) -> Bool
+pub fn Order::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Scored {
+  document : Document
+  score : Double
+}
+pub fn Scored::documents(ArrayView[Self]) -> Array[Document]
+pub fn Scored::equal(Self, Self) -> Bool
+pub fn Scored::from_json(@json.Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn Scored::not_equal(Self, Self) -> Bool
+pub fn Scored::to_json(Self) -> @json.Json
+pub fn Scored::to_repr(Self) -> @debug.Repr
+pub impl @json.FromJson for Scored
+pub impl @json.ToJson for Scored
+
+pub struct SimilarityRetriever {
+  embedder : &Embedder
+  store : &VectorStore
+  filter : Filter?
+}
+pub fn SimilarityRetriever::new(&Embedder, &VectorStore, filter? : Filter) -> Self
+pub async fn SimilarityRetriever::retrieve(Self, String, limit~ : Int32) -> Array[Scored]
+pub impl Retriever for SimilarityRetriever
 
 // Type aliases
 
 // Traits
+pub(open) trait Embedder {
+  async fn embed(Self, ArrayView[String]) -> Array[Array[Double]]
+}
+
+pub(open) trait Loader {
+  async fn load(Self) -> Array[Document]
+}
+
+pub(open) trait Retriever {
+  async fn retrieve(Self, String, limit~ : Int32) -> Array[Scored]
+}
+
+pub(open) trait Splitter {
+  fn split(Self, Document) -> Array[Document]
+}
+
+pub(open) trait VectorStore {
+  async fn add(Self, Array[Document]) -> Array[String]
+  async fn delete(Self, ArrayView[String]) -> Unit
+  async fn search(Self, ArrayView[Double], limit~ : Int32, filter? : Filter) -> Array[Scored]
+}

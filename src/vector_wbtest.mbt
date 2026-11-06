@@ -1,75 +1,79 @@
-// The embedding vector math (Koog `embeddings-base` `Vector`).
+// The vector arithmetic: the numbers a store ranks by, checked against values computed by hand.
 
 ///|
-/// Assert two doubles are within a small tolerance (the float results are not bit-exact).
-fn assert_close(a : Double, b : Double) -> Unit {
-  let d = if a > b { a - b } else { b - a }
-  if d > 1.0e-9 {
-    abort("expected \{a} ≈ \{b}")
+test "cosine similarity: same direction, orthogonal, opposite, zero vector" {
+  assert_eq(cosine_similarity([1.0, 2.0, 3.0][:], [1.0, 2.0, 3.0][:]), 1.0)
+  assert_eq(cosine_similarity([1.0, 0.0][:], [0.0, 1.0][:]), 0.0)
+  assert_eq(cosine_similarity([1.0, 0.0][:], [-1.0, 0.0][:]), -1.0)
+  // A zero vector has no direction, so every similarity with it is zero rather than a NaN.
+  assert_eq(cosine_similarity([0.0, 0.0][:], [3.0, 4.0][:]), 0.0)
+  assert_eq(cosine_similarity([3.0, 4.0][:], [0.0, 0.0][:]), 0.0)
+}
+
+///|
+test "cosine similarity ignores magnitude" {
+  let small = cosine_similarity([1.0, 1.0][:], [1.0, 0.0][:])
+  let large = cosine_similarity([1000.0, 1000.0][:], [0.5, 0.0][:])
+  assert_true((small - large).abs() < 1.0e-12)
+}
+
+///|
+test "dot product and magnitude of a 3-4-5 triangle" {
+  assert_eq(dot_product([1.0, 2.0, 3.0][:], [4.0, 5.0, 6.0][:]), 32.0)
+  assert_eq(magnitude([3.0, 4.0][:]), 5.0)
+  assert_eq(magnitude([0.0, 0.0][:]), 0.0)
+  assert_eq(dot_product([1.0, 0.0][:], [0.0, 1.0][:]), 0.0)
+}
+
+///|
+test "euclidean distance" {
+  assert_eq(euclidean_distance([0.0, 0.0][:], [3.0, 4.0][:]), 5.0)
+  assert_eq(euclidean_distance([1.0, 2.0][:], [1.0, 2.0][:]), 0.0)
+}
+
+///|
+test "normalized scales to unit length and leaves zero alone" {
+  let unit = normalized([3.0, 4.0][:])
+  assert_true((magnitude(unit[:]) - 1.0).abs() < 1.0e-12)
+  assert_eq(unit[0], 0.6)
+  assert_eq(normalized([0.0, 0.0][:]), [0.0, 0.0])
+}
+
+///|
+test "sums stay accurate over many terms" {
+  // A thousand 0.1s: plain left-to-right summation drifts, compensated summation does not.
+  let values : Array[Double] = []
+  for i = 0; i < 1000; i = i + 1 {
+    values.push(0.1)
   }
+  // sqrt(1000 * 0.1 * 0.1) = sqrt(10).
+  assert_true((magnitude(values[:]) - 10.0.sqrt()).abs() < 1.0e-10)
 }
 
 ///|
-test "vector: dimension, is_null, magnitude, and dot product" {
-  assert_eq(Vector::{ values: [1.0, 2.0, 3.0], }.dimension(), 3)
-  assert_eq(Vector::{ values: [0.0, 0.0, 0.0], }.is_null(), true)
-  assert_eq(Vector::{ values: [0.0, 1.0], }.is_null(), false)
-  // 3-4-5 right triangle.
-  assert_close(Vector::{ values: [3.0, 4.0], }.magnitude(), 5.0)
-  // 1*4 + 2*5 + 3*6 = 32.
-  assert_close(
-    Vector::{ values: [1.0, 2.0, 3.0], }.dot_product({
-      values: [4.0, 5.0, 6.0],
-    }),
-    32.0,
-  )
-}
-
-///|
-test "vector: cosine similarity spans identical, orthogonal, and opposite" {
-  // Identical direction → 1.
-  assert_close(
-    Vector::{ values: [1.0, 2.0, 3.0], }.cosine_similarity({
-      values: [1.0, 2.0, 3.0],
-    }),
-    1.0,
-  )
-  // Orthogonal → 0.
-  assert_close(
-    Vector::{ values: [1.0, 0.0], }.cosine_similarity({ values: [0.0, 1.0], }),
-    0.0,
-  )
-  // Opposite → -1.
-  assert_close(
-    Vector::{ values: [1.0, 0.0], }.cosine_similarity({ values: [-1.0, 0.0], }),
-    -1.0,
-  )
-  // A null vector yields 0, not a division by zero.
-  assert_close(
-    Vector::{ values: [0.0, 0.0], }.cosine_similarity({ values: [1.0, 1.0], }),
-    0.0,
-  )
-}
-
-///|
-test "vector: euclidean distance and dimension-mismatch error" {
-  assert_close(
-    Vector::{ values: [0.0, 0.0], }.euclidean_distance({ values: [3.0, 4.0], }),
-    5.0,
-  )
-  assert_close(
-    Vector::{ values: [1.0, 2.0, 3.0], }.euclidean_distance({
-      values: [1.0, 2.0, 3.0],
-    }),
-    0.0,
-  )
-  // Mismatched dimensions raise.
+test "dimension mismatch raises Mismatch with both lengths" {
   let raised = try {
-    Vector::{ values: [1.0, 2.0], }.cosine_similarity({ values: [1.0], })
-    |> ignore
+    cosine_similarity([1.0, 2.0][:], [1.0][:]) |> ignore
+    None
+  } catch {
+    Refused::Mismatch(got~, want~) => Some((got, want))
+    _ => None
+  }
+  assert_eq(raised, Some((1, 2)))
+  let dot = try {
+    dot_product([1.0][:], [1.0, 2.0][:]) |> ignore
     false
   } catch {
-    _ => true
+    Refused::Mismatch(_) => true
+    _ => false
   }
-  assert_eq(raised, true)
+  assert_true(dot)
+  let distance = try {
+    euclidean_distance([1.0][:], [1.0, 2.0][:]) |> ignore
+    false
+  } catch {
+    Refused::Mismatch(_) => true
+    _ => false
+  }
+  assert_true(distance)
 }
