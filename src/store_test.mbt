@@ -311,3 +311,18 @@ async test "hits and lookups carry the id the document is stored under" {
   store.delete([hits[0].document.id.unwrap()][:])
   assert_eq(store.len(), 0)
 }
+
+///|
+async test "a generated id never takes one a document named for itself" {
+  let embedder : &@moonrag.Embedder = TableEmbedder::new([
+    ("named", [1.0, 0.0]),
+    ("anonymous", [0.0, 1.0]),
+  ])
+  let store = @moonrag.InMemoryVectorStore::new(embedder)
+  // The caller happens to name a document exactly the id the store would generate next.
+  let _ = store.add([@moonrag.Document::new("named", id="doc-0")])
+  let ids = store.add([@moonrag.Document::new("anonymous")])
+  assert_eq(ids, ["doc-1"])
+  assert_eq(store.get("doc-0").unwrap().text, "named")
+  assert_eq(store.len(), 2)
+}

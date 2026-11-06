@@ -31,8 +31,14 @@ fn InMemoryVectorStore::assign_id(
   match document.id {
     Some(id) => if id == "" { raise Empty(what="document id") } else { id }
     None => {
-      let id = "doc-" + self.counter.to_string()
+      // Skip ids a document named for itself: generating one that is taken would silently replace
+      // that document.
+      let mut id = "doc-" + self.counter.to_string()
       self.counter = self.counter + 1
+      while self.contains(id) {
+        id = "doc-" + self.counter.to_string()
+        self.counter = self.counter + 1
+      }
       id
     }
   }
@@ -65,6 +71,20 @@ pub fn InMemoryVectorStore::add_vectors(
     ids.push(id)
   }
   ids
+}
+
+///|
+/// Whether an entry is stored under `id`.
+fn InMemoryVectorStore::contains(
+  self : InMemoryVectorStore,
+  id : String,
+) -> Bool {
+  for entry in self.entries {
+    if entry.0 == id {
+      return true
+    }
+  }
+  false
 }
 
 ///|
