@@ -1,0 +1,51 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonrag/sql"
+
+import {
+  "moonbitstack/moondb",
+  "moonbitstack/moonrag",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct BlockingDriver[T] {
+  inner : T
+}
+pub async fn[T : @moondb.Driver] BlockingDriver::begin(Self[T]) -> Unit raise @moondb.DbError
+pub fn[T : @moondb.Driver] BlockingDriver::capabilities(Self[T]) -> @moondb.Capabilities
+pub async fn[T : @moondb.Driver] BlockingDriver::close(Self[T]) -> Unit
+pub async fn[T : @moondb.Driver] BlockingDriver::commit(Self[T]) -> Unit raise @moondb.DbError
+pub fn[T : @moondb.Driver] BlockingDriver::dialect(Self[T]) -> @moondb.Dialect
+pub async fn[T : @moondb.Driver] BlockingDriver::execute(Self[T], String, Array[@moondb.Value]) -> @moondb.ExecResult raise @moondb.DbError
+pub fn[T] BlockingDriver::inner(Self[T]) -> T
+pub fn[T] BlockingDriver::new(T) -> Self[T]
+pub async fn[T : @moondb.Driver] BlockingDriver::ping(Self[T]) -> Bool
+pub async fn[T : @moondb.Driver] BlockingDriver::prepare(Self[T], String) -> &@moondb.AsyncStmt raise @moondb.DbError
+pub async fn[T : @moondb.Driver] BlockingDriver::query(Self[T], String, Array[@moondb.Value]) -> Array[@moondb.Row] raise @moondb.DbError
+pub async fn[T : @moondb.Driver] BlockingDriver::query_stream(Self[T], String, Array[@moondb.Value]) -> &@moondb.AsyncCursor raise @moondb.DbError
+pub async fn[T : @moondb.Driver] BlockingDriver::rollback(Self[T]) -> Unit raise @moondb.DbError
+pub impl[T : @moondb.Driver] @moondb.AsyncDriver for BlockingDriver[T]
+
+pub struct SqlVectorStore[T] {
+  driver : T
+  embedder : &@moonrag.Embedder
+  dimension : Int32
+  table : String
+  mut counter : Int32
+}
+pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::add(Self[T], Array[@moonrag.Document]) -> Array[String]
+pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::clear(Self[T]) -> Unit
+pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::create(Self[T]) -> Unit
+pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::delete(Self[T], ArrayView[String]) -> Unit
+pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::get(Self[T], String) -> @moonrag.Document?
+pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::len(Self[T]) -> Int64
+pub fn[T : @moondb.AsyncDriver] SqlVectorStore::new(T, &@moonrag.Embedder, dimension~ : Int32, table? : String) -> Self[T] raise
+pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::search(Self[T], ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -> Array[@moonrag.Scored]
+pub impl[T : @moondb.AsyncDriver] @moonrag.VectorStore for SqlVectorStore[T]
+
+// Type aliases
+
+// Traits

@@ -40,6 +40,11 @@ keywords = [
   "csv",
   "json",
   "html",
+  "sql",
+  "sqlite",
+  "pgvector",
+  "postgresql",
+  "hnsw",
   "indexing",
   "incremental-index",
   "knowledge-base",
@@ -54,6 +59,7 @@ source = "src"
 
 import {
   "moonbitlang/async@0.22.5",
+  "moonbitstack/moondb@0.2.7",
   "moonbitstack/moonmd@0.1.0",
   "moonbitstack/moonxml@0.1.4",
   "moonbitstack/mooncrypt@0.4.12",

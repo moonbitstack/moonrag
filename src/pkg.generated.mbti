@@ -19,6 +19,8 @@ pub fn mmr(ArrayView[Double], ArrayView[Candidate], limit~ : Int32, lambda? : Do
 
 pub fn normalized(ArrayView[Double]) -> Array[Double]
 
+pub fn rank(Array[Scored], Int32) -> Array[Scored]
+
 // Errors
 #derive(Eq, @debug.Debug)
 pub(all) suberror Refused {

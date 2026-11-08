@@ -1,0 +1,13 @@
+// The SQL store's dialect-dependent pieces: one `VectorStore` over `moondb`'s `AsyncDriver`, with the
+// plan picked from the dialect the driver reports.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitstack/moondb",
+  "moonbitlang/core/json",
+  "moonbitlang/core/buffer",
+}
+
+import {
+  "moonbitlang/core/json",
+} for "wbtest"

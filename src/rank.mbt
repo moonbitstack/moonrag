@@ -7,7 +7,7 @@
 ///
 /// The sort is stable on purpose: with a small corpus, several documents tie at cosine `1.0`, and a
 /// caller re-running a search expects the same three each time.
-fn rank(hits : Array[Scored], limit : Int32) -> Array[Scored] {
+pub fn rank(hits : Array[Scored], limit : Int32) -> Array[Scored] {
   if limit <= 0 {
     return []
   }
