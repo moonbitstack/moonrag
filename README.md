@@ -41,10 +41,11 @@ moon add moonbitstack/moonrag
 ```moonbit
 import {
   "moonbitstack/moonrag",           // documents, contracts, memory store, retrieval
-  "moonbitstack/moonrag/split",     // recursive, token and HTML splitters
+  "moonbitstack/moonrag/split",     // recursive, token, Markdown and HTML splitters
   "moonbitstack/moonrag/load",      // text, CSV, JSON, Markdown, HTML loaders
   "moonbitstack/moonrag/load/file", // the same loaders, reading from disk
   "moonbitstack/moonrag/index",     // incremental indexing
+  "moonbitstack/moonrag/sql",       // a store in SQL, over any moondb driver
 }
 ```
 
@@ -90,7 +91,9 @@ One call embeds a batch, because that is what a model charges for and what makes
 `InMemoryVectorStore` is the reference implementation of `VectorStore`: documents in insertion order, every candidate scored on each search, filters applied before ranking.
 
 ```moonbit
+let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
 let store = @moonrag.InMemoryVectorStore::new(embedder)
+let query_vector = embedder.embed(["boats in the harbour"])[0]
 let ids = store.add([document])
 let hits = store.search(query_vector, limit=5)
 store.delete([ids[0]][:])
@@ -99,6 +102,53 @@ store.delete([ids[0]][:])
 An id that is already stored is replaced in place, which is what makes a re-index an update rather than a duplicate. Hits carry the id they are stored under, so a caller can delete what it just retrieved.
 
 Already have vectors? `add_vectors` takes them and skips the embedding.
+
+## Storing in SQL
+
+`SqlVectorStore` is the same contract over a table, for a corpus that has to outlive the process. It is
+written against `moondb`'s driver contract, so the database is chosen when the connection is opened and
+nothing here names it again: the store asks the driver for its dialect and picks a plan.
+
+```moonbit
+pub async fn[T : @moondb.AsyncDriver] search_with(
+  driver : T,
+  embedder : &@moonrag.Embedder,
+) -> Array[@moonrag.Scored] raise {
+  let store = @sql.SqlVectorStore::new(driver, embedder, dimension=256)
+  store.create()
+  let _ = store.add([@moonrag.Document::new("the harbour at dawn")])
+  let query = embedder.embed(["the harbour"])[0]
+  store.search(query[:], limit=3)
+}
+```
+
+`dimension` is the width of the vectors, fixed when the store is built because the column is declared
+with it; a document whose vector is another width is refused rather than stored. `create` writes the
+table, and whatever else the backend needs, with `IF NOT EXISTS` throughout, so it is safe on every
+start.
+
+Two plans, one store:
+
+- **PostgreSQL with pgvector.** The vectors live in a `vector(n)` column. `search` is one statement:
+  `1 - (embedding <=> $1)` is the cosine similarity the rest of the library ranks by, the metadata
+  filter is a `WHERE` clause over `jsonb`, and `LIMIT` cuts in the database. `create` also adds an HNSW
+  index for cosine distance; above 2000 components the type cannot be indexed and the index is left out.
+- **SQLite.** There is no distance operator, so the rows come back, the filter runs in this process —
+  the same `Filter::matches` the in-memory store calls — and the cosine is computed by the same
+  function. Vectors are stored as little-endian `f64` blobs. A local table read whole per query is the
+  right shape for the sizes SQLite is asked to hold; for a corpus that outgrows it, use PostgreSQL.
+
+SQLite's driver blocks: a local read returns when the row does. `BlockingDriver` presents it as the
+asynchronous driver this store is written against, so no thread is parked to wait for a file. Add
+`moonbitstack/moonsqlite` (or `moonbitstack/moonpostgres`) to the project and the store is one line:
+
+<!-- nocheck -->
+```moonbit
+let driver = @sql.BlockingDriver::new(@moonsqlite.SqliteDriver::open("app.db"))
+```
+
+MySQL is refused with `Unsupported` rather than half-supported: the SQL would be a guess and no test
+here reaches it.
 
 ## Retrieving
 
@@ -124,7 +174,20 @@ let chunks = splitter.split(document)
 
 The defaults (`4000`/`200`, separator kept at the start of the following chunk, whitespace trimmed) and the arithmetic follow a reference Python implementation of the same rules, and the fixtures in `src/conformance` replay it case for case.
 
-**Token** measures in the units that will be billed, with a counter you supply:
+**Token** measures in the units that will be billed, with a counter you supply — here one unit per
+word, which is what a chat model bills as a token only roughly:
+
+```moonbit
+fn count_tokens(text : StringView) -> Int32 {
+  let mut count = 0
+  for word in text.to_owned().split(" ") {
+    if word != "" {
+      count = count + 1
+    }
+  }
+  count
+}
+```
 
 ```moonbit
 let splitter = @split.TokenSplitter::new(count_tokens, chunk_size=512, chunk_overlap=64)
@@ -132,12 +195,34 @@ let splitter = @split.TokenSplitter::new(count_tokens, chunk_size=512, chunk_ove
 
 Each chunk is measured on its assembled text, so the promise holds for the real tokenizer rather than for an estimate.
 
+**Markdown** reads the document as a syntax tree, one chunk per heading, with the path down to it in
+the metadata. A `#` inside a fenced code block is a comment, not a heading, and a code block is never
+cut — half a program embeds to nothing useful, and its indentation survives the trip. A section over
+the budget is cut at block boundaries; prose that fits in no chunk at all is handed to the recursive
+splitter, which can break a sentence and still leave something readable.
+
+```moonbit
+let markdown = "# Install\n\nmoon add moonbitstack/moonrag.\n\n## Search\n\nBuild a store, then search.\n"
+let splitter = @split.MarkdownSplitter::new(chunk_size=1000)
+let chunks = splitter.split(@moonrag.Document::new(markdown))
+assert_eq(chunks.length(), 2)
+assert_eq(chunks[1].str_meta("h1"), Some("Install"))
+assert_eq(chunks[1].str_meta("h2"), Some("Search"))
+```
+
+A level that is not listed in `headings` does not split: `MarkdownSplitter::new(headings=[MarkdownHeading::new(1, "h1")])`
+keeps `## Search` in the text of the section above it, which is what a caller who only wants chapters
+is asking for.
+
 **HTML** reads the parsed tree, one chunk per heading-delimited section, with the heading path in the metadata:
 
 ```moonbit
+let page_html = "<html><body><h1>Install</h1><p>moon add moonbitstack/moonrag.</p><h2>Search</h2><p>Build a store, then search.</p></body></html>"
 let splitter = @split.HtmlSplitter::new(chunk_size=1000)
 let sections = splitter.split(@moonrag.Document::new(page_html))
-// sections[1].str_meta("h1") == Some("Install"); .str_meta("h2") == Some("Search")
+assert_eq(sections.length(), 2)
+assert_eq(sections[0].str_meta("h1"), Some("Install"))
+assert_eq(sections[1].str_meta("h2"), Some("Search"))
 ```
 
 A section longer than the budget is cut again by the recursive splitter with the same heading path, so no chunk outgrows an embedding window.
@@ -153,14 +238,15 @@ A section longer than the budget is cut again by the recursive splitter with the
 | `HtmlLoader` | the readable text of the page | `source`, `title` |
 
 ```moonbit
+let csv_text = "name,city\nalice,London\nbob,Paris\n"
 let documents = @moonrag.Loader::load(@load.CsvLoader::new("people.csv", csv_text))
 ```
 
 CSV follows RFC 4180: quoted fields keep delimiters, doubled quotes and newlines. JSON takes a `text_key` to say which field is prose; without one it uses `text`, and failing that writes the object out so nothing is lost.
 
-Reading from disk lives one level down, in `load/file`, because a filesystem is not something every target has:
+Reading from disk lives one level down, in `load/file`, because a filesystem is not something every target has. It builds for the native target; the loaders above it build everywhere:
 
-```moonbit
+```mbt native
 let documents = @file.csv("people.csv")
 let text = @file.markdown("notes.md")
 ```
@@ -200,9 +286,22 @@ The source key defaults to `source`, the metadata key every loader writes. Movin
 ## Conformance
 
 - **Splitters.** The recursive splitter replays 56 cases and the token splitter 32 — prose, code, CJK, whitespace-heavy and separator-free text, across four sizes, three separator placements and both whitespace settings — produced by a reference Python implementation of the same rules (1.1.3). Chunks match exactly; `scripts/gen_split_vectors.py` regenerates them.
+- **Markdown splitting.** Eight cases from the header splitter of the same reference release — a preamble, nested levels, adjacent headings, a section that is one code block, and a `#` inside a fence that must not split — replay chunk text and heading path. Two of the reference's behaviours are deliberately not followed, and are covered by this library's own tests instead: it joins the blocks of a section with a Markdown hard break (`"  \n"`), and it strips every line, which flattens the indentation of code. `scripts/gen_langchain_cases.py` regenerates the fixtures.
+- **Ranking and MMR.** Five ranking cases and seven MMR cases over fixed vectors: the same documents in the same order, and the same `lambda` trade-offs, as the reference returns. A score is a cosine summed in a different order, so the fixtures are compared to one part in a trillion; the order is compared exactly.
 - **Store and retrieval.** The behaviours a vector-store standard suite requires — add, search with scores, limit, metadata filtering, delete by id, update by id, empty store, dimension mismatch, order independence — plus a retriever's limit, descending scores, filters and MMR diversity.
+- **Three backends.** The same standard cases run against the in-memory store, against SQLite, and against PostgreSQL with pgvector, which is the only way to know that one contract holds over one table and one process. The pgvector cases read the column type back out of the catalogue and compare the store's score with the one the database computed, so a store that ranked in this process and said otherwise would fail.
 - **End to end.** Load, split, index and retrieve as one test over a page and a note, including a second pass that must embed nothing.
 - **Against a filesystem.** The file front end is tested by writing real files to a temporary directory and reading them back through all five loaders.
+
+The three-backend cases live in `integration/`, a module of its own, so a program that uses this
+library does not download a SQLite amalgamation and a PostgreSQL driver for the sake of a test:
+
+```shell
+cd integration && moon test --target native
+```
+
+The pgvector cases need a server; `MOONRAG_LIVE=1` says one is there, and then one has to answer.
+Without it they print why they did nothing and return.
 
 ## Examples
 
@@ -211,6 +310,7 @@ The source key defaults to `source`, the metadata key every loader writes. Movin
 | 01 | [`ingest`](src/examples/01-ingest/) | load, split, index, retrieve, then index again and embed nothing |
 | 02 | [`store`](src/examples/02-store/) | add, filter, rank, rerank with MMR, delete |
 | 03 | [`files`](src/examples/03-files/) | the file front end over a real temporary directory |
+| 04 | [`markdown`](src/examples/04-markdown/) | one chunk per heading, the path in the metadata, a code block kept whole |
 
 ```shell
 moon run src/examples/01-ingest --target native

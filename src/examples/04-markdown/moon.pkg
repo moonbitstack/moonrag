@@ -1,0 +1,6 @@
+import {
+  "moonbitstack/moonrag",
+  "moonbitstack/moonrag/split",
+}
+
+pkgtype(kind: "executable")

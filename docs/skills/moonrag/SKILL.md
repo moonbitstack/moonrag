@@ -1,6 +1,6 @@
 ---
 name: moonrag
-description: Build a retrieval pipeline in MoonBit with moonbitstack/moonrag — documents with metadata, loaders for text/CSV/JSON/Markdown/HTML, recursive/token/HTML splitters, an in-memory vector store with filters, similarity and MMR retrievers, and incremental indexing. Use when chunking a corpus, storing embeddings, searching them, or wiring retrieval into an agent in MoonBit.
+description: Build a retrieval pipeline in MoonBit with moonbitstack/moonrag — documents with metadata, loaders for text/CSV/JSON/Markdown/HTML, recursive/token/Markdown/HTML splitters, an in-memory or SQL vector store (SQLite, PostgreSQL with pgvector) with filters, similarity and MMR retrievers, and incremental indexing. Use when chunking a corpus, storing embeddings, searching them, or wiring retrieval into an agent in MoonBit.
 ---
 
 # moonrag
@@ -17,11 +17,27 @@ import {
   "moonbitstack/moonrag/load",      // loaders over text already in memory
   "moonbitstack/moonrag/load/file", // the same loaders, reading from disk
   "moonbitstack/moonrag/index",     // incremental indexing
+  "moonbitstack/moonrag/sql",       // a store in SQL, over any moondb driver
   "moonbitlang/async",
 }
 ```
 
-Everything moves `@moonrag.Document`: `text`, an optional `id`, and `meta : Map[String, @json.Json]`. The four contracts are `Embedder`, `VectorStore`, `Retriever`, `Splitter`, `Loader`; implement any of them and the rest of the pipeline takes it unchanged.
+Everything moves `@moonrag.Document`: `text`, an optional `id`, and `meta : Map[String, @json.Json]`. The five contracts are `Embedder`, `VectorStore`, `Retriever`, `Splitter`, `Loader`; implement any of them and the rest of the pipeline takes it unchanged.
+
+The examples below share one store, so start here:
+
+```moonbit
+let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
+let store = @moonrag.InMemoryVectorStore::new(embedder)
+let _ = store.add([
+  @moonrag.Document::new("the harbour at dawn, fishing boats leaving", id="harbour"),
+  @moonrag.Document::new("a mountain path in autumn, cold and clear", id="ridge"),
+])
+let query_vector = embedder.embed(["fishing boats"])[0]
+```
+
+`HashingEmbedder` is a deterministic stand-in — lexical, not semantic. Swap in an implementation of
+`Embedder` that calls the model you actually use.
 
 ## Ingest a corpus and search it
 
@@ -77,11 +93,58 @@ let diverse : &@moonrag.Retriever = @moonrag.MmrRetriever::new(
 )
 ```
 
+## Split Markdown without breaking code
+
+```moonbit
+let markdown = "# Install\n\nmoon add moonbitstack/moonrag.\n\n## Search\n\nBuild a store, then search.\n"
+let splitter = @split.MarkdownSplitter::new(
+  chunk_size=1000,
+  headings=[@split.MarkdownHeading::new(1, "h1"), @split.MarkdownHeading::new(2, "h2")],
+)
+let chunks = splitter.split(@moonrag.Document::new(markdown, id="guide.md"))
+assert_eq(chunks.length(), 2)
+assert_eq(chunks[1].str_meta("h2"), Some("Search"))
+```
+
+Heading text lands in the metadata under the key you chose, and every chunk carries the whole path
+down to it. A `#` inside a fenced code block is not a heading, and a code block is emitted whole however
+long it is. A level you do not list does not split — it stays in the text of the section above.
+
+## Keep the vectors in a database
+
+```moonbit
+pub async fn[T : @moondb.AsyncDriver] store_over(
+  driver : T,
+  embedder : &@moonrag.Embedder,
+) -> @sql.SqlVectorStore[T] raise {
+  let store = @sql.SqlVectorStore::new(driver, embedder, dimension=256, table="documents")
+  store.create()
+  store
+}
+```
+
+`dimension` is the width of the embedding model, fixed at construction because the column is declared
+with it. `create` is `IF NOT EXISTS` throughout, so it belongs on every start. On PostgreSQL with
+pgvector the search is one statement, filter and `LIMIT` included; on SQLite the rows come back and the
+distance is computed in this process with the same filter tree the in-memory store uses.
+
+`moonsqlite` implements the blocking driver contract, so wrap it: `@sql.BlockingDriver::new(driver)`.
+`moonpostgres`'s `PgConn` is asynchronous and goes in as it is. MySQL is refused rather than
+half-supported.
+
 ## Bring your own model
 
 ```moonbit
-pub impl @moonrag.Embedder for MyEmbedder with fn embed(self, texts) {
-  // ... call the model once for the whole batch ...
+struct MyEmbedder {
+  model : String
+}
+
+impl @moonrag.Embedder for MyEmbedder with fn embed(self, texts) {
+  // One request for the whole batch is where the model call goes.
+  let vectors : Array[Array[Double]] = []
+  for text in texts {
+    vectors.push([text.length().to_double(), self.model.length().to_double()])
+  }
   vectors
 }
 ```
@@ -95,4 +158,7 @@ One call embeds a batch: that is the unit a model charges for. All vectors in a 
 - `RecursiveSplitter`'s `chunk_size` counts code points unless you pass `measure=`; pass a token counter to split by tokens, or use `TokenSplitter`, which is built for exactly that.
 - `HtmlSplitter` needs the raw markup, not the text an `HtmlLoader` already flattened: the headings are in the markup.
 - `MmrRetriever` re-embeds its candidates, because a store returns documents and scores, never vectors. Keep `fetch_limit` modest.
+- `MarkdownSplitter` splits on all six heading levels by default; pass `headings=` to split on chapters only.
+- `SqlVectorStore` fixes the vector width at construction: a second model with another width needs another table.
+- `SqlVectorStore::create` installs the `vector` extension on PostgreSQL, which needs a role allowed to create it. Where the database is managed by someone else, run `CREATE EXTENSION vector` once yourself.
 - File reading lives in `load/file`, which does not build for `js` or `wasm-gc`; the parsers in `load` work on every target.
