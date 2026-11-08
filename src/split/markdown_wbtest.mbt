@@ -204,3 +204,13 @@ test "an overlap of zero leaves the blocks where they are" {
     "First paragraph.\n\nSecond paragraph.", "Third paragraph.",
   ])
 }
+
+///|
+test "a deeper heading is forgotten when a shallower one opens" {
+  let markdown = "# A\n\ntop.\n\n## B\n\nmiddle.\n\n### C\n\ndeep.\n\n## D\n\nup again.\n"
+  let chunks = MarkdownSplitter::new().split(@moonrag.Document::new(markdown))
+  assert_eq(chunks.length(), 4)
+  assert_eq(heading_path(chunks[2]), ["A", "B", "C"])
+  // D is a sibling of B, so C must not still be in force when D opens.
+  assert_eq(heading_path(chunks[3]), ["A", "D"])
+}
