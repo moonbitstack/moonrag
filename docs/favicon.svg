@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <style>
     /* The same two stones as the site: platinum on a light browser, lapis on a dark one. */
-    .ground { fill: #f3f3f0; }
-    .rule { fill: #1a1c1e; }
-    .mark { fill: #2c477a; }
+    .ground { fill: #f2f2f0; }
+    .rule { fill: #17181a; }
+    .mark { fill: #002fa7; }
     @media (prefers-color-scheme: dark) {
-      .ground { fill: #0b1526; }
-      .rule { fill: #eceff5; }
-      .mark { fill: #93b4e2; }
+      .ground { fill: #0b1733; }
+      .rule { fill: #eceff9; }
+      .mark { fill: #9fb8f0; }
     }
   </style>
   <rect class="ground" width="32" height="32" rx="5" />

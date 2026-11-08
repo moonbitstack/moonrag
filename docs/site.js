@@ -313,3 +313,35 @@ document.querySelectorAll("[data-copy]").forEach((button) => {
     }
   });
 });
+
+// ---------- the way back up ----------------------------------------------------------------
+
+const toTop = document.createElement("button");
+toTop.type = "button";
+toTop.className = "totop";
+toTop.setAttribute("aria-label", "Back to top");
+// The arrow is the mark, the word is the label: the same division the rest of the page uses.
+const arrow = document.createElement("span");
+arrow.textContent = "\u2191";
+arrow.setAttribute("aria-hidden", "true");
+toTop.append(arrow, document.createTextNode("top"));
+document.body.append(toTop);
+
+const calm = matchMedia("(prefers-reduced-motion: reduce)");
+const showToTop = () => toTop.classList.toggle("is-visible", scrollY > innerHeight * 0.8);
+let toTopFrame = 0;
+addEventListener(
+  "scroll",
+  () => {
+    if (toTopFrame) return;
+    toTopFrame = requestAnimationFrame(() => {
+      toTopFrame = 0;
+      showToTop();
+    });
+  },
+  { passive: true },
+);
+toTop.addEventListener("click", () => {
+  scrollTo({ top: 0, behavior: calm.matches ? "auto" : "smooth" });
+});
+showToTop();
