@@ -4,6 +4,8 @@
 
 **Documents, splitting, vectors and retrieval for MoonBit. Embeddings arrive through a contract, so nothing here calls a model.**
 
+[**site**](https://moonbitstack.github.io/moonrag/) &nbsp;·&nbsp; [**guide**](https://moonbitstack.github.io/moonrag/guide.html) &nbsp;·&nbsp; [**api**](https://moonbitstack.github.io/moonrag/api.html) &nbsp;·&nbsp; [**demo**](https://moonbitstack.github.io/moonrag/demo.html) &nbsp;·&nbsp; [**mooncakes**](https://mooncakes.io/docs/moonbitstack/moonrag)
+
 [![CI](https://github.com/moonbitstack/moonrag/actions/workflows/ci.yml/badge.svg)](https://github.com/moonbitstack/moonrag/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-Apache--2.0-b23a1f.svg)](LICENSE)
 

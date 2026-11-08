@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>moonrag — demo</title>
+    <meta
+      name="description"
+      content="Split a document and rerank a corpus in the browser. Both panels call moonrag compiled to JavaScript."
+    />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header>
+      <a class="wordmark" href="./">moonrag <span>0.1</span></a>
+      <nav>
+        <a href="./guide.html">guide</a>
+        <a href="./api.html">api</a>
+        <a href="./demo.html" aria-current="page">demo</a>
+        <a class="icon" href="https://github.com/moonbitstack/moonrag" aria-label="Source on GitHub">
+          <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+            />
+          </svg>
+        </a>
+        <button class="icon" data-theme-toggle aria-label="Switch theme" type="button">
+          <svg class="sun" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">
+            <circle cx="8" cy="8" r="3.1" />
+            <path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3.05 3.05l1.13 1.13M11.82 11.82l1.13 1.13M12.95 3.05l-1.13 1.13M4.18 11.82l-1.13 1.13" />
+          </svg>
+          <svg class="moon" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M13.5 9.6A6 6 0 0 1 6.4 2.5a6 6 0 1 0 7.1 7.1Z" />
+          </svg>
+        </button>
+      </nav>
+    </header>
+
+    <div class="shell">
+      <main class="wide">
+        <section>
+          <p class="eyebrow">demo</p>
+          <h1>Two panels, one library</h1>
+          <p class="lead">
+            Everything below is computed by <code>moonbitstack/moonrag</code> compiled to JavaScript
+            from the same sources the package ships. There is no second implementation behind these
+            controls: the page imports <code>docs/engine/moonrag.js</code>, built from
+            <code>src/examples/browser/</code> when the site is published.
+          </p>
+        </section>
+
+        <section>
+          <div class="section-label"><b>01</b> <span>split</span></div>
+          <h2>Cut a document</h2>
+          <p>
+            Paste anything. The three modes are the three splitters: <code>markdown</code> walks the
+            syntax tree, <code>text</code> tries separators from coarse to fine, and
+            <code>token</code> measures in words — a stand-in for the counter your model really uses.
+          </p>
+
+          <div class="figure" data-splitter>
+            <div class="figure-head">
+              <span>split</span>
+              <div class="segmented" role="group" aria-label="Splitter">
+                <button type="button" data-mode="markdown" aria-pressed="true">markdown</button>
+                <button type="button" data-mode="text" aria-pressed="false">text</button>
+                <button type="button" data-mode="token" aria-pressed="false">token</button>
+              </div>
+              <span class="spacer"></span>
+              <span data-status>—</span>
+            </div>
+            <div class="figure-body">
+              <textarea data-text spellcheck="false" style="min-height: 260px"># Release notes
+
+The library reads documents, splits them and ranks them.
+
+## Splitting
+
+A heading opens a section. A section over the budget is cut at block boundaries, and the overlap
+carries whole blocks into the next chunk.
+
+```moonbit
+let splitter = @split.MarkdownSplitter::new(chunk_size=120)
+let chunks = splitter.split(@moonrag.Document::new(note))
+```
+
+### Code stays whole
+
+Even when it does not fit the budget, a code block is one chunk: half a program embeds to nothing.
+
+## Loading
+
+Five formats load into the same document: text, CSV, JSON, Markdown and HTML.</textarea>
+              <label class="control">
+                <span>chunk_size</span>
+                <input type="range" data-size min="24" max="320" step="2" value="120" />
+                <output data-size-out>120</output>
+              </label>
+              <label class="control">
+                <span>overlap</span>
+                <input type="range" data-overlap min="0" max="80" step="1" value="0" />
+                <output data-overlap-out>0</output>
+              </label>
+              <div class="strip" data-strip></div>
+            </div>
+          </div>
+          <p class="caption">
+            Code points, not bytes: a Chinese sentence and an English one of the same length cost the
+            same budget. Overlap is capped below the budget, because a chunk cannot carry more of the
+            previous one than it holds.
+          </p>
+        </section>
+
+        <section>
+          <div class="section-label"><b>02</b> <span>rerank</span></div>
+          <h2>Rerank a corpus</h2>
+          <p>
+            Seven passages, four numbers each, written down in the engine. Switch between a plain
+            cosine search and MMR, then move
+            <code>lambda</code>: at <code>1.0</code> the two orders agree, and as it falls the list
+            starts choosing passages that say something new over passages that say the same thing
+            again.
+          </p>
+
+          <div class="figure" data-retriever>
+            <div class="figure-head">
+              <span>retrieve</span>
+              <div class="segmented" role="group" aria-label="Order">
+                <button type="button" data-order="mmr" aria-pressed="true">mmr</button>
+                <button type="button" data-order="similarity" aria-pressed="false">similarity</button>
+              </div>
+              <span class="spacer"></span>
+              <span data-status>—</span>
+            </div>
+            <div class="figure-body">
+              <div class="segmented" data-queries role="group" aria-label="Query"></div>
+              <label class="control" data-lambda-row>
+                <span>lambda</span>
+                <input type="range" data-lambda min="0" max="1" step="0.05" value="0.3" />
+                <output data-lambda-out>0.30</output>
+              </label>
+              <label class="control">
+                <span>limit</span>
+                <input type="range" data-k min="1" max="7" step="1" value="5" />
+                <output data-k-out>5</output>
+              </label>
+              <table class="hits">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>passage</th>
+                    <th style="text-align: right">score</th>
+                  </tr>
+                </thead>
+                <tbody data-hits></tbody>
+              </table>
+            </div>
+          </div>
+          <p class="caption">
+            The score is the cosine to the query. MMR uses it and the similarity between candidates to
+            decide the order; the number shown stays the one a reader can check.
+          </p>
+        </section>
+
+        <section>
+          <div class="section-label"><b>03</b> <span>what this proves</span></div>
+          <h2>The page cannot drift from the library</h2>
+          <p>
+            The engine is rebuilt from these sources whenever the site is published, so the page
+            cannot drift from the library. A page that reimplemented the splitter in JavaScript would
+            not break; it would quietly disagree, which is worse.
+          </p>
+          <p>
+            The two things this page cannot show are the ones that need a database: the SQL store and
+            its filters. Those are exercised against SQLite and against PostgreSQL with pgvector, on
+            the same standard cases the in-memory store passes.
+          </p>
+          <div class="actions">
+            <a class="button" href="./guide.html">Guide</a>
+            <a class="button" href="./api.html">API reference</a>
+            <a class="button" href="https://github.com/moonbitstack/moonrag/tree/master/integration">The SQL cases</a>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <span>Apache-2.0</span>
+        <a href="https://github.com/moonbitstack/moonrag">source</a>
+        <span class="spacer">engine built from src/examples/browser</span>
+      </footer>
+    </div>
+
+    <script type="module" src="site.js"></script>
+  </body>
+</html>

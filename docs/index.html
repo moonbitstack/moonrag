@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>moonrag — documents, splitting, vectors, retrieval</title>
+    <meta
+      name="description"
+      content="A retrieval pipeline for MoonBit: documents, splitters, a vector store in memory or in SQL, and retrievers that rank. Embeddings arrive through a contract, so nothing here calls a model."
+    />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header>
+      <a class="wordmark" href="./">moonrag <span>0.1</span></a>
+      <nav>
+        <a href="./guide.html">guide</a>
+        <a href="./api.html">api</a>
+        <a href="./demo.html">demo</a>
+        <a
+          class="icon"
+          href="https://github.com/moonbitstack/moonrag"
+          aria-label="Source on GitHub"
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+            />
+          </svg>
+        </a>
+        <button class="icon" data-theme-toggle aria-label="Switch theme" type="button">
+          <svg class="sun" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">
+            <circle cx="8" cy="8" r="3.1" />
+            <path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3.05 3.05l1.13 1.13M11.82 11.82l1.13 1.13M12.95 3.05l-1.13 1.13M4.18 11.82l-1.13 1.13" />
+          </svg>
+          <svg class="moon" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M13.5 9.6A6 6 0 0 1 6.4 2.5a6 6 0 1 0 7.1 7.1Z" />
+          </svg>
+        </button>
+      </nav>
+    </header>
+
+    <div class="shell">
+      <main>
+        <div class="content">
+          <section data-label="text in">
+            <p class="eyebrow">retrieval, without a model</p>
+            <h1>Text in, ranked passages out.</h1>
+            <p class="lead">
+              A retrieval pipeline for MoonBit: documents, splitters, a vector store in memory or in
+              SQL, and retrievers that rank. Embeddings arrive through a contract, so nothing here
+              calls a model — and every number on this page is computed by this library, compiled to
+              JavaScript.
+            </p>
+
+            <div class="figure" data-splitter>
+              <div class="figure-head">
+                <span>split</span>
+                <div class="segmented" role="group" aria-label="Splitter">
+                  <button type="button" data-mode="markdown" aria-pressed="true">markdown</button>
+                  <button type="button" data-mode="text" aria-pressed="false">text</button>
+                  <button type="button" data-mode="token" aria-pressed="false">token</button>
+                </div>
+                <span class="spacer"></span>
+                <span data-status>—</span>
+              </div>
+              <div class="figure-body">
+                <textarea data-text spellcheck="false"># Field notes
+
+A retriever finds the passages a question needs.
+
+## Splitting
+
+A heading opens a section, and code is never cut:
+
+```moonbit
+let chunks = splitter.split(document)
+```
+
+## Ranking
+
+Cosine similarity, with ties going to the document that arrived first.</textarea>
+                <label class="control">
+                  <span>chunk_size</span>
+                  <input type="range" data-size min="24" max="320" step="2" value="90" />
+                  <output data-size-out>90</output>
+                </label>
+                <label class="control">
+                  <span>overlap</span>
+                  <input type="range" data-overlap min="0" max="80" step="1" value="0" />
+                  <output data-overlap-out>0</output>
+                </label>
+                <div class="strip" data-strip></div>
+              </div>
+            </div>
+            <p class="caption">
+              The text is real input to the splitter; the numbers under each chunk are its code
+              points. Drag the budget down and watch the seams land between words — never inside one,
+              and never inside the fence.
+            </p>
+
+            <div class="metrics">
+              <div class="metric">
+                <b><!--num:packages-->6<!--/num--></b>
+                <span>packages</span>
+              </div>
+              <div class="metric">
+                <b><!--num:backends-->3<!--/num--></b>
+                <span>vector stores</span>
+              </div>
+              <div class="metric">
+                <b><!--num:cases-->108<!--/num--></b>
+                <span>reference cases replayed</span>
+              </div>
+              <div class="metric">
+                <b><!--num:examples-->4<!--/num--></b>
+                <span>runnable examples</span>
+              </div>
+            </div>
+
+            <div class="actions">
+              <a class="button primary" href="./guide.html">Build the first pipeline</a>
+              <a class="button" href="./demo.html">Open the demo</a>
+            </div>
+          </section>
+
+          <section data-label="chunk">
+            <div class="section-label"><b>01</b> <span>chunk</span></div>
+            <h2>A chunk is the unit</h2>
+            <p>
+              Everything downstream sees chunks: the embedder embeds them, the store files them, the
+              retriever ranks them. What a chunk is decides what the library can ever find, so the
+              splitters are the part worth choosing carefully.
+            </p>
+            <table class="grid">
+              <thead>
+                <tr>
+                  <th>splitter</th>
+                  <th>cuts at</th>
+                  <th>keeps</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Recursive</td>
+                  <td>paragraph, line, space, character</td>
+                  <td>nothing but the text; overlap carries the seam</td>
+                </tr>
+                <tr>
+                  <td>Token</td>
+                  <td>the budget your counter reports</td>
+                  <td>the promise that a chunk fits the model's window</td>
+                </tr>
+                <tr>
+                  <td>Markdown</td>
+                  <td>headings, then block boundaries</td>
+                  <td>the heading path, the fence, the indentation inside it</td>
+                </tr>
+                <tr>
+                  <td>HTML</td>
+                  <td>heading-delimited sections</td>
+                  <td>the readable text, with <code>h1</code> … <code>h6</code> in the metadata</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="caption">
+              A section over the budget is cut again; a code block is not. Half a program embeds to
+              nothing useful.
+            </p>
+          </section>
+
+          <section data-label="score">
+            <div class="section-label"><b>02</b> <span>score</span></div>
+            <h2>The score is a cosine</h2>
+            <p>
+              Two vectors of the same width, divided by their lengths. That is the whole ranking
+              function, and it is why a long passage and a short one about the same thing compare
+              fairly: length is divided out.
+            </p>
+            <pre><code>query  = (0.9, 0.1, 0.0, 0.1)
+passage = (1.0, 0.0, 0.0, 0.0)
+
+dot    = 0.9
+|query| = 0.911043…
+score  = 0.9 / 0.911043… = 0.9878783399072131</code></pre>
+            <p>
+              The number on the right is not an illustration: it is what the engine returns for the
+              first passage of the corpus below, and the same arithmetic the package ranks with on
+              every target. Ties keep the order the documents arrived in, which is the only stable
+              answer when several passages score exactly the same.
+            </p>
+          </section>
+
+          <section data-label="dedupe">
+            <div class="section-label"><b>03</b> <span>rerank</span></div>
+            <h2>Five copies of one passage</h2>
+            <p>
+              A plain search on a corpus of near-duplicates fills the answer with the same paragraph.
+              MMR reranks the candidates against each other, trading relevance for coverage: near
+              <code>lambda = 1</code> it behaves like a plain search, near <code>0</code> like "the
+              most different thing still related to the question".
+            </p>
+
+            <div class="figure" data-retriever>
+              <div class="figure-head">
+                <span>retrieve</span>
+                <div class="segmented" role="group" aria-label="Order">
+                  <button type="button" data-order="mmr" aria-pressed="true">mmr</button>
+                  <button type="button" data-order="similarity" aria-pressed="false">
+                    similarity
+                  </button>
+                </div>
+                <span class="spacer"></span>
+                <span data-status>—</span>
+              </div>
+              <div class="figure-body">
+                <div class="segmented" data-queries role="group" aria-label="Query"></div>
+                <label class="control" data-lambda-row>
+                  <span>lambda</span>
+                  <input type="range" data-lambda min="0" max="1" step="0.05" value="0.3" />
+                  <output data-lambda-out>0.30</output>
+                </label>
+                <label class="control">
+                  <span>limit</span>
+                  <input type="range" data-k min="1" max="7" step="1" value="4" />
+                  <output data-k-out>4</output>
+                </label>
+                <table class="hits">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>passage</th>
+                      <th style="text-align: right">score</th>
+                    </tr>
+                  </thead>
+                  <tbody data-hits></tbody>
+                </table>
+              </div>
+            </div>
+            <p class="caption">
+              The score under MMR is the relevance of the passage, not the MMR value that picked it —
+              the number you would quote, not the number that decided the order.
+            </p>
+          </section>
+
+          <section data-label="store">
+            <div class="section-label"><b>04</b> <span>store</span></div>
+            <h2>One contract, three places to keep vectors</h2>
+            <p>
+              <code>VectorStore</code> is four methods. Where the distance is computed is the
+              implementation's business, and it is the only thing that changes between these three:
+            </p>
+            <table class="grid">
+              <thead>
+                <tr>
+                  <th>store</th>
+                  <th>the distance runs</th>
+                  <th>what a search is</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>memory</td>
+                  <td>in this process</td>
+                  <td>score every document, sort, cut</td>
+                </tr>
+                <tr>
+                  <td>sqlite</td>
+                  <td>in this process</td>
+                  <td>read the rows, apply the filter, score, sort</td>
+                </tr>
+                <tr>
+                  <td>pgvector</td>
+                  <td>in the database</td>
+                  <td>
+                    one statement: <code>1 - (embedding &lt;=&gt; $1)</code>, the filter in
+                    <code>WHERE</code>, <code>LIMIT</code> on the server
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p>
+              The same standard cases run against all three — add, search with scores, limit,
+              metadata filtering, delete by id, update by id, an empty store, a vector of the wrong
+              width, and the same documents added in a different order.
+            </p>
+          </section>
+
+          <section data-label="install">
+            <div class="section-label"><b>05</b> <span>install</span></div>
+            <h2>Five contracts, pick one of each</h2>
+            <p>
+              A pipeline is assembled, not configured: choose a loader, a splitter, an embedder and a
+              store, and the retriever on top of them does not know which you chose.
+            </p>
+            <table class="grid">
+              <thead>
+                <tr>
+                  <th>contract</th>
+                  <th>the method</th>
+                  <th>implement it when</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Loader</td>
+                  <td><code>async load()</code></td>
+                  <td>documents come from somewhere new</td>
+                </tr>
+                <tr>
+                  <td>Splitter</td>
+                  <td><code>split(document)</code></td>
+                  <td>your corpus needs a chunking rule of its own</td>
+                </tr>
+                <tr>
+                  <td>Embedder</td>
+                  <td><code>async embed(texts)</code></td>
+                  <td>you have a model, hosted or local</td>
+                </tr>
+                <tr>
+                  <td>VectorStore</td>
+                  <td><code>add</code>, <code>delete</code>, <code>search</code></td>
+                  <td>vectors live somewhere this library does not ship</td>
+                </tr>
+                <tr>
+                  <td>Retriever</td>
+                  <td><code>async retrieve(query, limit)</code></td>
+                  <td>a question needs rewriting or reranking before it is answered</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="shell-cmd">moon add moonbitstack/moonrag</div>
+            <div class="actions">
+              <a class="button" href="./guide.html">Guide</a>
+              <a class="button" href="./api.html">API reference</a>
+              <a class="button" href="https://mooncakes.io/docs/moonbitstack/moonrag">mooncakes</a>
+            </div>
+          </section>
+        </div>
+
+        <aside class="rail scroll" aria-label="Retrieval rail">
+          <div class="rail-head">
+            <span>retrieval rail</span>
+            <b data-rail-section>text in</b>
+          </div>
+          <div class="rail-body">
+            <div class="rail-block">chunks · code points</div>
+            <div data-rail-chunks></div>
+            <div class="rail-block">hits · score</div>
+            <div data-rail-hits></div>
+            <p class="rail-note">
+              Both lists are filled by this library, running in the page. Drag a control and the rail
+              moves with it.
+            </p>
+          </div>
+        </aside>
+      </main>
+
+      <footer>
+        <span>Apache-2.0</span>
+        <a href="https://github.com/moonbitstack/moonrag">source</a>
+        <a href="https://mooncakes.io/docs/moonbitstack/moonrag">mooncakes</a>
+        <span class="spacer">numbers generated from the sources</span>
+      </footer>
+    </div>
+
+    <script type="module" src="site.js"></script>
+  </body>
+</html>

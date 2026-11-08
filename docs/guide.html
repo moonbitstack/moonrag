@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>moonrag — guide</title>
+    <meta
+      name="description"
+      content="From an empty project to a ranked answer: install, load, split, embed, store, retrieve, then re-index without re-embedding."
+    />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header>
+      <a class="wordmark" href="./">moonrag <span>0.1</span></a>
+      <nav>
+        <a href="./guide.html" aria-current="page">guide</a>
+        <a href="./api.html">api</a>
+        <a href="./demo.html">demo</a>
+        <a class="icon" href="https://github.com/moonbitstack/moonrag" aria-label="Source on GitHub">
+          <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+            />
+          </svg>
+        </a>
+        <button class="icon" data-theme-toggle aria-label="Switch theme" type="button">
+          <svg class="sun" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">
+            <circle cx="8" cy="8" r="3.1" />
+            <path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3.05 3.05l1.13 1.13M11.82 11.82l1.13 1.13M12.95 3.05l-1.13 1.13M4.18 11.82l-1.13 1.13" />
+          </svg>
+          <svg class="moon" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M13.5 9.6A6 6 0 0 1 6.4 2.5a6 6 0 1 0 7.1 7.1Z" />
+          </svg>
+        </button>
+      </nav>
+    </header>
+
+    <div class="shell">
+      <main>
+        <div class="content">
+          <section data-label="guide">
+            <p class="eyebrow">guide</p>
+            <h1>One pipeline, end to end</h1>
+            <p class="lead">
+              From an empty project to a ranked answer. Every output below is what the code printed
+              when it ran, not a sketch of what it would print.
+            </p>
+          </section>
+
+          <section id="install" data-label="install">
+            <div class="step"><b>01</b><h3>Add the package</h3></div>
+            <div class="shell-cmd">moon add moonbitstack/moonrag</div>
+            <pre><code>import {
+  "moonbitstack/moonrag",           // documents, contracts, memory store, retrieval
+  "moonbitstack/moonrag/split",     // recursive, token, Markdown and HTML splitters
+  "moonbitstack/moonrag/load",      // text, CSV, JSON, Markdown, HTML loaders
+  "moonbitstack/moonrag/index",     // incremental indexing
+}</code></pre>
+            <p>
+              A loader, a splitter, an embedder and a store are the four pieces a pipeline is
+              assembled from. <code>moonbitlang/async</code> is a dependency of anything that awaits
+              a store or an embedder, so add it too if your project does not have it.
+            </p>
+          </section>
+
+          <section id="pipeline" data-label="pipeline">
+            <div class="step"><b>02</b><h3>The first pipeline</h3></div>
+            <p>
+              Load a CSV, split it, index it, and ask a question. The indexer is what makes the second
+              run cheap; it is covered in step five.
+            </p>
+            <pre><code>async fn ingest(embedder : &amp;@moonrag.Embedder, csv : String) -&gt; Array[@moonrag.Scored] raise {
+  let store = @moonrag.InMemoryVectorStore::new(embedder)
+  let indexer = @index.Indexer::new(store)
+
+  let documents = @moonrag.Loader::load(@load.CsvLoader::new("people.csv", csv))
+  let splitter = @split.RecursiveSplitter::new(chunk_size=500, chunk_overlap=50)
+  let pieces : Array[@moonrag.Document] = []
+  for document in documents {
+    for chunk in splitter.split(document) {
+      pieces.push(chunk)
+    }
+  }
+  let _ = indexer.index(pieces)
+
+  let retriever : &amp;@moonrag.Retriever = @moonrag.SimilarityRetriever::new(embedder, store)
+  retriever.retrieve("who lives in London", limit=3)
+}</code></pre>
+            <p>
+              The embedder is yours to write. <code>HashingEmbedder</code> is a deterministic stand-in
+              that needs no network — good for tests and for getting the shape of a pipeline before a
+              model is involved. With the examples' corpus and that embedder, the equivalent program
+              prints:
+            </p>
+            <pre><code>documents to index: 3
+indexed: added=3 updated=0 skipped=0
+
+query: how do I add the package
+  0.4644046100019301  [guide.html] Install
+Add the package with moon add moonbitstack/moonrag.
+  0.05634361698190111  [guide.html &gt; Search] Search
+Build a store, add documents, then search with a query vector.
+
+query: cosine and magnitude
+  0.366146046676159  [notes.md &gt; Field notes] # Field notes
+
+Cosine similarity ignores magnitude, so a long passage and a short one about the same subject compare fairly.
+  -0.030556616567607043  [guide.html &gt; Search] Search
+Build a store, add documents, then search with a query vector.
+
+second pass: added=0 skipped=3</code></pre>
+            <p>
+              Two things to read in that output: the score is a cosine, so it can be negative, and a
+              retrieved chunk carries the heading path it came from —
+              <code>[guide.html &gt; Search]</code> is the metadata, not the text.
+            </p>
+          </section>
+
+          <section id="splitter" data-label="splitter">
+            <div class="step"><b>03</b><h3>Choose the splitter</h3></div>
+            <p>
+              Chunking decides what the library can find. Four rules, one per splitter: paragraphs
+              with an overlap, a token budget you supply, headings with a path, or headings in HTML.
+              For Markdown, the syntax tree is read, so a <code>#</code> inside a fence is a comment
+              and a code block is never cut.
+            </p>
+            <pre><code>let markdown = "# Install\n\nmoon add moonbitstack/moonrag.\n\n## Search\n\nBuild a store, then search.\n"
+let splitter = @split.MarkdownSplitter::new(chunk_size=1000)
+let chunks = splitter.split(@moonrag.Document::new(markdown))
+assert_eq(chunks.length(), 2)
+assert_eq(chunks[1].str_meta("h1"), Some("Install"))
+assert_eq(chunks[1].str_meta("h2"), Some("Search"))</code></pre>
+            <p>
+              The heading text lands in the metadata under the key you chose, and every chunk carries
+              the whole path down to it. A level you do not list does not split — it stays in the text
+              of the section above:
+            </p>
+            <pre><code>let splitter = @split.MarkdownSplitter::new(headings=[
+  @split.MarkdownHeading::new(1, "h1"),
+  @split.MarkdownHeading::new(2, "h2"),
+])</code></pre>
+            <p class="caption">
+              Defaults: all six levels split, headings are stripped from the chunk, overlap is zero.
+            </p>
+          </section>
+
+          <section id="store" data-label="store">
+            <div class="step"><b>04</b><h3>Put the vectors somewhere</h3></div>
+            <p>
+              <code>InMemoryVectorStore</code> is the reference implementation: documents in insertion
+              order, every candidate scored on every search, filters applied before ranking. When the
+              corpus has to outlive the process, the same contract is a table — and the database is
+              chosen once, when the connection is opened.
+            </p>
+            <pre><code>pub async fn[T : @moondb.AsyncDriver] search_with(
+  driver : T,
+  embedder : &amp;@moonrag.Embedder,
+) -&gt; Array[@moonrag.Scored] raise {
+  let store = @sql.SqlVectorStore::new(driver, embedder, dimension=256)
+  store.create()
+  let _ = store.add([@moonrag.Document::new("the harbour at dawn")])
+  let query = embedder.embed(["the harbour"])[0]
+  store.search(query[:], limit=3)
+}</code></pre>
+            <p>
+              <code>dimension</code> is the width of the embedding model, fixed at construction
+              because the column is declared with it. On PostgreSQL with pgvector the search is one
+              statement; on SQLite the rows come back and the cosine is computed in this process. A
+              SQLite driver that blocks goes in through <code>BlockingDriver</code>:
+            </p>
+            <pre><code>let driver = @sql.BlockingDriver::new(@moonsqlite.SqliteDriver::open("app.db"))</code></pre>
+            <p class="caption">
+              This last line needs <code>moon add moonbitstack/moonsqlite</code>; the library itself
+              depends on no driver.
+            </p>
+          </section>
+
+          <section id="index" data-label="index">
+            <div class="step"><b>05</b><h3>Re-index without re-embedding</h3></div>
+            <p>
+              Embedding is the expensive part, so a second run over an unchanged corpus must embed
+              nothing. The indexer keeps a content hash per stored id:
+            </p>
+            <pre><code>let indexer = @index.Indexer::new(store)
+let stats = indexer.index(chunks)                        // added / updated / skipped / deleted
+let cleaned = indexer.index(chunks, cleanup=@index.Cleanup::Full)</code></pre>
+            <dl class="fields">
+              <dt>unchanged</dt>
+              <dd>same id, same content hash: skipped, nothing embedded.</dd>
+              <dt>changed</dt>
+              <dd>same id, different text or metadata: the old copy is deleted, the new one added.</dd>
+              <dt>gone</dt>
+              <dd>
+                <code>Incremental</code> deletes documents whose source appears in this run and whose
+                id does not; <code>Full</code> deletes everything this run did not produce;
+                <code>None</code> deletes nothing.
+              </dd>
+            </dl>
+            <p>
+              The source key defaults to <code>source</code>, the metadata key every loader writes.
+              Moving a file changes the source but not the hash, so a moved file is not re-embedded.
+            </p>
+          </section>
+
+          <section id="errors" data-label="errors">
+            <div class="step"><b>06</b><h3>When it goes wrong</h3></div>
+            <table class="grid">
+              <thead>
+                <tr>
+                  <th>what you see</th>
+                  <th>what it means</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Mismatch</td>
+                  <td>a vector met one of another width; the store and the model disagree</td>
+                </tr>
+                <tr>
+                  <td>Empty</td>
+                  <td>a blank id, a blank heading key, a budget that is not positive</td>
+                </tr>
+                <tr>
+                  <td>Exceeded</td>
+                  <td>an overlap larger than the budget, or two headings at one level</td>
+                </tr>
+                <tr>
+                  <td>a filter that returns nothing</td>
+                  <td>
+                    a missing key matches nothing — except under <code>Not</code>, which matches what
+                    the inner filter would have failed
+                  </td>
+                </tr>
+                <tr>
+                  <td>the same passage five times</td>
+                  <td>near-duplicates winning a plain search; rerank with MMR</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="actions">
+              <a class="button" href="./demo.html">See it run</a>
+              <a class="button" href="./api.html">API reference</a>
+              <a class="button" href="https://github.com/moonbitstack/moonrag/tree/master/src/examples">All four examples</a>
+            </div>
+          </section>
+        </div>
+
+        <aside class="rail scroll" aria-label="Contents">
+          <div class="rail-head">
+            <span>contents</span>
+            <b data-rail-section>install</b>
+          </div>
+          <div class="rail-body">
+            <div class="toc">
+              <a href="#install">01 · add the package</a>
+              <a href="#pipeline">02 · the first pipeline</a>
+              <a href="#splitter">03 · choose the splitter</a>
+              <a href="#store">04 · put the vectors somewhere</a>
+              <a href="#index">05 · re-index without re-embedding</a>
+              <a href="#errors">06 · when it goes wrong</a>
+            </div>
+            <p class="rail-note">
+              The examples in this guide are the ones the repository runs; the outputs are pasted from
+              a native run.
+            </p>
+          </div>
+        </aside>
+      </main>
+
+      <footer>
+        <span>Apache-2.0</span>
+        <a href="https://github.com/moonbitstack/moonrag">source</a>
+        <a href="https://mooncakes.io/docs/moonbitstack/moonrag">mooncakes</a>
+        <span class="spacer">moonrag guide</span>
+      </footer>
+    </div>
+
+    <script type="module" src="site.js"></script>
+  </body>
+</html>

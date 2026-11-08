@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>moonrag — API reference</title>
+    <meta
+      name="description"
+      content="Every public type, function, method and value of moonbitstack/moonrag, generated from the package interfaces and the doc comments in the sources."
+    />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="site.css" />
+  </head>
+  <body>
+    <header>
+      <a class="wordmark" href="./">moonrag <span>0.1</span></a>
+      <nav>
+        <a href="./guide.html">guide</a>
+        <a href="./api.html" aria-current="page">api</a>
+        <a href="./demo.html">demo</a>
+        <a class="icon" href="https://github.com/moonbitstack/moonrag" aria-label="Source on GitHub">
+          <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
+            <path
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+            />
+          </svg>
+        </a>
+        <button class="icon" data-theme-toggle aria-label="Switch theme" type="button">
+          <svg class="sun" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">
+            <circle cx="8" cy="8" r="3.1" />
+            <path d="M8 1v1.6M8 13.4V15M1 8h1.6M13.4 8H15M3.05 3.05l1.13 1.13M11.82 11.82l1.13 1.13M12.95 3.05l-1.13 1.13M4.18 11.82l-1.13 1.13" />
+          </svg>
+          <svg class="moon" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2">
+            <path d="M13.5 9.6A6 6 0 0 1 6.4 2.5a6 6 0 1 0 7.1 7.1Z" />
+          </svg>
+        </button>
+      </nav>
+    </header>
+
+    <div class="shell">
+      <main>
+        <div class="content">
+          <section>
+            <p class="eyebrow">reference</p>
+            <h1>Every public name, in one place</h1>
+            <p class="lead">
+              Generated from each package's interface file and the doc comments in its sources, so
+              this page cannot describe a library that is not there.
+            </p>
+          </section>
+          <section id="moonrag-top"><h2>moonrag</h2><p>Documents, the five contracts, the in-memory store, the retrievers, vector arithmetic and metadata filters.</p>
+<article class="api" id="moonrag-refused"><h3><span class="kind">suberror</span>Refused</h3>
+<p>A request the library will not carry out.  <code>Mismatch</code> is two vectors of different length meeting where one length is needed, <code>Empty</code> a blank string where one has to be non-blank, <code>Exceeded</code> a number outside the range <code>limit</code> bounds, <code>Malformed</code> unreadable input at <code>at</code>, and <code>Unsupported</code> a request this build does not serve.</p>
+<pre class="sig scroll"><code>pub(all) suberror Refused {
+  Mismatch(got~ : Int32, want~ : Int32)
+  Empty(what~ : String)
+  Exceeded(limit~ : Int32, got~ : Int32)
+  Malformed(at~ : Int32, why~ : String)
+  Unsupported(what~ : String)
+}</code></pre>
+</article>
+<article class="api" id="moonrag-candidate"><h3><span class="kind">struct</span>Candidate</h3>
+<p>A document together with the vector it was embedded to.  MMR reranks by comparing candidates with each other, and a score alone cannot do that: the vectors have to travel with the documents.</p>
+<pre class="sig scroll"><code>pub(all) struct Candidate {
+  document : Document
+  vector : Array[Double]
+}</code></pre>
+</article>
+<article class="api" id="moonrag-document"><h3><span class="kind">struct</span>Document</h3>
+<p>A piece of text, with an optional identity and metadata.  <code>id</code> is what a store keys a document by. Leave it <code>None</code> and the store assigns one; set it and the document keeps the same identity across re-indexing, which is what makes an update replace the old copy instead of piling up beside it. <code>meta</code> carries whatever the caller needs — a source path, a page number, a heading path — and is what a <code>Filter</code> reads.</p>
+<pre class="sig scroll"><code>pub(all) struct Document {
+  id : String?
+  text : String
+  meta : Map[String, @json.Json]
+}</code></pre>
+<div class="member" id="moonrag-document-derived"><pre class="sig scroll"><code>pub fn Document::derived(Self, Int32, String, start_index? : Int32) -&gt; Self</code></pre><p>A document cut out of <code>parent</code>: same metadata plus the chunk number, a derived id when the parent had one, and the offset it started at when the splitter knows it.  Splitters are not the only producers of chunks — a caller streaming pages out of a PDF has the same needs — so the bookkeeping lives here rather than in each of them.</p></div>
+<div class="member" id="moonrag-document-from_json"><pre class="sig scroll"><code>pub fn Document::from_json(@json.Json, @json.JsonPath) -&gt; Self raise @json.JsonDecodeError</code></pre></div>
+<div class="member" id="moonrag-document-meta_of"><pre class="sig scroll"><code>pub fn Document::meta_of(Self, String) -&gt; @json.Json?</code></pre><p>The metadata value stored under <code>key</code>, or <code>None</code>.</p></div>
+<div class="member" id="moonrag-document-new"><pre class="sig scroll"><code>pub fn Document::new(String, id? : String, meta? : Map[String, @json.Json]) -&gt; Self</code></pre><p>A document with <code>text</code>, no identity, and no metadata.</p></div>
+<div class="member" id="moonrag-document-set_meta"><pre class="sig scroll"><code>pub fn Document::set_meta(Self, String, @json.Json) -&gt; Self</code></pre><p>The same document with <code>key</code> set to <code>value</code>; a key already present is replaced.</p></div>
+<div class="member" id="moonrag-document-str_meta"><pre class="sig scroll"><code>pub fn Document::str_meta(Self, String) -&gt; String?</code></pre><p>The metadata value stored under <code>key</code> when it is a string, or <code>None</code>.</p></div>
+<div class="member" id="moonrag-document-to_json"><pre class="sig scroll"><code>pub fn Document::to_json(Self) -&gt; @json.Json</code></pre></div>
+<div class="member" id="moonrag-document-with_id"><pre class="sig scroll"><code>pub fn Document::with_id(Self, String) -&gt; Self</code></pre><p>The same document under <code>id</code>, for a store that keys by caller-chosen identity.</p></div>
+<div class="member" id="moonrag-document-with_meta"><pre class="sig scroll"><code>pub fn Document::with_meta(Self, Map[String, @json.Json]) -&gt; Self</code></pre><p>The same document carrying <code>metadata</code>, for a filter to match on.</p></div>
+</article>
+<article class="api" id="moonrag-filter"><h3><span class="kind">enum</span>Filter</h3>
+<p>A condition on a document&#x27;s metadata.  <code>Equal</code> matches a whole JSON value, <code>OneOf</code> any of a list, <code>Exists</code> only that the key is present, and <code>Compare</code> a number against an operand. <code>All</code> and <code>Any</code> nest, <code>Not</code> negates. A document whose metadata lacks the key matches nothing except <code>Not</code> of a filter it would otherwise fail.</p>
+<pre class="sig scroll"><code>pub(all) enum Filter {
+  Equal(String, @json.Json)
+  OneOf(String, Array[@json.Json])
+  Exists(String)
+  Compare(String, Order, Double)
+  All(Array[Filter])
+  Any(Array[Filter])
+  Not(Filter)
+}</code></pre>
+<div class="member" id="moonrag-filter-matches"><pre class="sig scroll"><code>pub fn Filter::matches(Self, Document) -&gt; Bool</code></pre><p>Whether <code>document</code> satisfies the filter.</p></div>
+</article>
+<article class="api" id="moonrag-hashingembedder"><h3><span class="kind">struct</span>HashingEmbedder</h3>
+<p>A deterministic embedder that needs neither a model nor a network: it hashes the words and the character trigrams of a text into a fixed-width vector.  It is lexical, not semantic — &quot;cat&quot; and &quot;feline&quot; land far apart — so it suits tests, offline examples and keyword-ish retrieval, not production ranking. Being deterministic, it is also the vector source for differential tests: the same text yields the same vector on every target.</p>
+<pre class="sig scroll"><code>pub struct HashingEmbedder {
+  dimension : Int32
+}</code></pre>
+<div class="member" id="moonrag-hashingembedder-new"><pre class="sig scroll"><code>pub fn HashingEmbedder::new(dimension? : Int32) -&gt; Self raise</code></pre><p>A hashing embedder producing <code>dimension</code>-component vectors. <code>256</code> is wide enough that a handful of documents rarely collide and narrow enough to keep a fixture readable.  Raises <code>Empty</code> when <code>dimension</code> is not positive.</p></div>
+</article>
+<article class="api" id="moonrag-inmemoryvectorstore"><h3><span class="kind">struct</span>InMemoryVectorStore</h3>
+<p>A <code>VectorStore</code> held in memory, keyed by document id.  The store embeds what it is given, so <code>add</code> takes documents while a search takes the query&#x27;s vector. That split is deliberate: writing is the rare, batched, cacheable path, while a search often reuses one query vector across several stores.</p>
+<pre class="sig scroll"><code>pub struct InMemoryVectorStore {
+  embedder : &amp;Embedder
+  mut entries : Array[(String, Document, Array[Double])]
+  mut counter : Int32
+}</code></pre>
+<div class="member" id="moonrag-inmemoryvectorstore-add_vectors"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::add_vectors(Self, Array[Document], ArrayView[Array[Double]]) -&gt; Array[String] raise</code></pre><p>Store documents that already carry their vectors, returning their ids. An id already present is replaced in place, which is what makes a re-index an update rather than a duplicate.  Raises <code>Mismatch</code> when the vector count differs from the document count or two vectors differ in length, and <code>Empty</code> for a document whose id is the empty string.</p></div>
+<div class="member" id="moonrag-inmemoryvectorstore-clear"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored document.</p></div>
+<div class="member" id="moonrag-inmemoryvectorstore-get"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::get(Self, String) -&gt; Document?</code></pre><p>The document stored under <code>id</code>, or <code>None</code>. The returned document carries the id it is stored under, so it can be deleted or refetched without keeping the id beside it.</p></div>
+<div class="member" id="moonrag-inmemoryvectorstore-ids"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::ids(Self) -&gt; Array[String]</code></pre><p>The ids of the stored documents, in the order they were added.</p></div>
+<div class="member" id="moonrag-inmemoryvectorstore-len"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::len(Self) -&gt; Int32</code></pre><p>The number of stored documents.</p></div>
+<div class="member" id="moonrag-inmemoryvectorstore-new"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::new(&amp;Embedder) -&gt; Self</code></pre><p>An empty store that embeds with <code>embedder</code>.</p></div>
+<div class="member" id="moonrag-inmemoryvectorstore-vector_of"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::vector_of(Self, String) -&gt; Array[Double]?</code></pre><p>The vector stored for <code>id</code>, or <code>None</code> — for a caller that reranks hits itself.</p></div>
+</article>
+<article class="api" id="moonrag-mmrretriever"><h3><span class="kind">struct</span>MmrRetriever</h3>
+<p>Returns relevant documents that are also unlike each other, by maximal marginal relevance.  A plain search on a corpus of near-duplicates returns the same paragraph five times. MMR trades some relevance for coverage: <code>lambda</code> near <code>1</code> behaves like a plain search, near <code>0</code> like &quot;the most different thing that is still related&quot;.</p>
+<pre class="sig scroll"><code>pub struct MmrRetriever {
+  embedder : &amp;Embedder
+  store : &amp;VectorStore
+  filter : Filter?
+  lambda : Double
+  fetch_limit : Int32
+}</code></pre>
+<div class="member" id="moonrag-mmrretriever-new"><pre class="sig scroll"><code>pub fn MmrRetriever::new(&amp;Embedder, &amp;VectorStore, lambda? : Double, fetch_limit? : Int32, filter? : Filter) -&gt; Self</code></pre><p>An MMR retriever over <code>store</code>. <code>fetch_limit</code> candidates are ranked by similarity first and then reranked by MMR, so it must be at least the <code>limit</code> a caller asks for; <code>lambda</code> weights relevance against diversity.</p></div>
+</article>
+<article class="api" id="moonrag-order"><h3><span class="kind">enum</span>Order</h3>
+<p>How <code>Compare</code> orders a metadata number against its operand.</p>
+<pre class="sig scroll"><code>pub(all) enum Order {
+  Less
+  AtMost
+  AtLeast
+  Greater
+}</code></pre>
+</article>
+<article class="api" id="moonrag-scored"><h3><span class="kind">struct</span>Scored</h3>
+<p>A document and the score it earned: what one search returns.</p>
+<pre class="sig scroll"><code>pub(all) struct Scored {
+  document : Document
+  score : Double
+}</code></pre>
+<div class="member" id="moonrag-scored-documents"><pre class="sig scroll"><code>pub fn Scored::documents(ArrayView[Self]) -&gt; Array[Document]</code></pre><p>The documents in <code>hits</code>, dropping the scores.</p></div>
+<div class="member" id="moonrag-scored-from_json"><pre class="sig scroll"><code>pub fn Scored::from_json(@json.Json, @json.JsonPath) -&gt; Self raise @json.JsonDecodeError</code></pre></div>
+<div class="member" id="moonrag-scored-to_json"><pre class="sig scroll"><code>pub fn Scored::to_json(Self) -&gt; @json.Json</code></pre></div>
+</article>
+<article class="api" id="moonrag-similarityretriever"><h3><span class="kind">struct</span>SimilarityRetriever</h3>
+<p>Ranks documents by cosine similarity to the query, and returns the best <code>limit</code>.</p>
+<pre class="sig scroll"><code>pub struct SimilarityRetriever {
+  embedder : &amp;Embedder
+  store : &amp;VectorStore
+  filter : Filter?
+}</code></pre>
+<div class="member" id="moonrag-similarityretriever-new"><pre class="sig scroll"><code>pub fn SimilarityRetriever::new(&amp;Embedder, &amp;VectorStore, filter? : Filter) -&gt; Self</code></pre><p>A similarity retriever over <code>store</code>, embedding queries with <code>embedder</code>. <code>filter</code> narrows the candidates before ranking, in the store where the documents live.</p></div>
+</article>
+<article class="api" id="moonrag-embedder"><h3><span class="kind">trait</span>Embedder</h3>
+<p>Turns batches of text into vectors of equal length.  One call embeds a batch, not a string: every model worth calling charges per request, and a batch is also what makes a re-index affordable. All vectors in a batch must have the same length, and the same text must embed to the same vector — ranking is keyed on that.</p>
+<pre class="sig scroll"><code>pub(open) trait Embedder {
+  async fn embed(Self, ArrayView[String]) -&gt; Array[Array[Double]]
+}</code></pre>
+</article>
+<article class="api" id="moonrag-loader"><h3><span class="kind">trait</span>Loader</h3>
+<p>Produces documents from somewhere — a file, a directory, an API, a literal string.  Failure is part of the contract because the source may be unreadable or malformed; a loader that quietly returns nothing looks identical to an empty document and hides the problem.</p>
+<pre class="sig scroll"><code>pub(open) trait Loader {
+  async fn load(Self) -&gt; Array[Document]
+}</code></pre>
+</article>
+<article class="api" id="moonrag-retriever"><h3><span class="kind">trait</span>Retriever</h3>
+<p>Answers a question in text: embeds it, searches, returns the best documents.  A retriever is the whole read path behind one call; a reranker, a query rewrite, or MMR is an implementation of this trait and nothing above it changes.</p>
+<pre class="sig scroll"><code>pub(open) trait Retriever {
+  async fn retrieve(Self, String, limit~ : Int32) -&gt; Array[Scored]
+}</code></pre>
+</article>
+<article class="api" id="moonrag-splitter"><h3><span class="kind">trait</span>Splitter</h3>
+<p>Cuts one document into smaller documents.  Splitting is not async: it is pure text work with no I/O, and keeping it synchronous lets it run inside a parser or a test without an event loop.</p>
+<pre class="sig scroll"><code>pub(open) trait Splitter {
+  fn split(Self, Document) -&gt; Array[Document]
+}</code></pre>
+</article>
+<article class="api" id="moonrag-vectorstore"><h3><span class="kind">trait</span>VectorStore</h3>
+<p>Where vectors live.  <code>add</code> takes documents, not vectors: the store owns the embedder it was built with, so a caller never has to keep the two in step by hand. <code>search</code> takes the query&#x27;s vector, because the query is often embedded once and searched in several stores, and because an embedding call is the expensive part a caller wants to place itself.</p>
+<pre class="sig scroll"><code>pub(open) trait VectorStore {
+  async fn add(Self, Array[Document]) -&gt; Array[String]
+  async fn delete(Self, ArrayView[String]) -&gt; Unit
+  async fn search(Self, ArrayView[Double], limit~ : Int32, filter? : Filter) -&gt; Array[Scored]
+}</code></pre>
+</article>
+<h3 id="moonrag-fns">Functions</h3>
+<div class="member" id="moonrag-cosine_similarity"><pre class="sig scroll"><code>pub fn cosine_similarity(ArrayView[Double], ArrayView[Double]) -&gt; Double raise</code></pre><p>The cosine similarity of two vectors, in <code>[-1, 1]</code>: <code>1</code> for the same direction, <code>0</code> for orthogonal vectors or when either is all zeros, <code>-1</code> for opposite directions.  Raises <code>Mismatch</code> when the lengths differ. Cosine ignores magnitude, so a long document and a short one about the same thing score alike — which is why it is the usual ranking metric for text.</p></div>
+<div class="member" id="moonrag-dot_product"><pre class="sig scroll"><code>pub fn dot_product(ArrayView[Double], ArrayView[Double]) -&gt; Double raise</code></pre><p>The dot product of two vectors of the same length.  Raises <code>Mismatch</code> when the lengths differ.</p></div>
+<div class="member" id="moonrag-euclidean_distance"><pre class="sig scroll"><code>pub fn euclidean_distance(ArrayView[Double], ArrayView[Double]) -&gt; Double raise</code></pre><p>The Euclidean distance between two vectors: <code>0</code> for identical vectors, larger for further ones.  Raises <code>Mismatch</code> when the lengths differ. Use it when the embedding model was trained on it; ranking by distance ascending and by similarity descending agree only for normalised vectors, so the two are kept apart rather than folded into one.</p></div>
+<div class="member" id="moonrag-magnitude"><pre class="sig scroll"><code>pub fn magnitude(ArrayView[Double]) -&gt; Double</code></pre><p>The Euclidean norm of a vector.</p></div>
+<div class="member" id="moonrag-mmr"><pre class="sig scroll"><code>pub fn mmr(ArrayView[Double], ArrayView[Candidate], limit~ : Int32, lambda? : Double) -&gt; Array[Scored] raise</code></pre><p>Pick up to <code>limit</code> candidates that are relevant to <code>query</code> and unlike each other.  Each round scores every remaining candidate as <code>lambda * similarity to the query - (1 - lambda) * highest similarity to an already picked one</code>, and takes the best; <code>lambda = 1</code> degenerates to plain similarity, <code>lambda = 0</code> to &quot;show me the most novel document&quot;. Ties go to the earlier candidate, so the result is deterministic.  Raises <code>Mismatch</code> when a candidate vector&#x27;s length differs from the query&#x27;s.</p></div>
+<div class="member" id="moonrag-normalized"><pre class="sig scroll"><code>pub fn normalized(ArrayView[Double]) -&gt; Array[Double]</code></pre><p><code>vector</code> scaled to unit length; an all-zero vector comes back unchanged rather than as NaNs.</p></div>
+<div class="member" id="moonrag-rank"><pre class="sig scroll"><code>pub fn rank(Array[Scored], Int32) -&gt; Array[Scored]</code></pre><p><code>hits</code> sorted by score descending — equal scores keep their arrival order — cut to <code>limit</code>.  The sort is stable on purpose: with a small corpus, several documents tie at cosine <code>1.0</code>, and a caller re-running a search expects the same three each time.</p></div>
+</section>
+<section id="split-top"><h2>split</h2><p>Cutting a document into chunks: recursive separators, a token budget, Markdown sections and HTML sections.</p>
+<article class="api" id="split-htmlsplitter"><h3><span class="kind">struct</span>HtmlSplitter</h3>
+<p>Cuts an HTML document into one chunk per heading-delimited section.  Each chunk&#x27;s metadata carries the headings above it as <code>h1</code> … <code>h6</code>, so a retrieved chunk can say which section it belongs to. A section longer than <code>chunk_size</code> is cut again by the recursive splitter with the same heading path, so no chunk outgrows an embedding window.</p>
+<pre class="sig scroll"><code>pub struct HtmlSplitter {
+  chunk_size : Int32
+  inner : RecursiveSplitter
+}</code></pre>
+<div class="member" id="split-htmlsplitter-new"><pre class="sig scroll"><code>pub fn HtmlSplitter::new(chunk_size? : Int32, chunk_overlap? : Int32, strip_whitespace? : Bool) -&gt; Self raise</code></pre><p>A splitter cutting sections of at most <code>chunk_size</code> code points; a section shorter than that stays whole. Raises <code>Empty</code> when <code>chunk_size</code> is not positive, and <code>Exceeded</code> when <code>chunk_overlap</code> is negative or larger than <code>chunk_size</code>.</p></div>
+<div class="member" id="split-htmlsplitter-split"><pre class="sig scroll"><code>pub fn HtmlSplitter::split(Self, @moonrag.Document) -&gt; Array[@moonrag.Document]</code></pre></div>
+<div class="member" id="split-htmlsplitter-split_html"><pre class="sig scroll"><code>pub fn HtmlSplitter::split_html(Self, String, meta? : Map[String, @json.Json]) -&gt; Array[@moonrag.Document]</code></pre><p>The chunks <code>html</code> splits into: one per section, or several when a section is over budget.</p></div>
+</article>
+<article class="api" id="split-keepseparator"><h3><span class="kind">enum</span>KeepSeparator</h3>
+<p>Where a separator goes relative to the piece it separated.</p>
+<pre class="sig scroll"><code>pub(all) enum KeepSeparator {
+  Drop
+  Start
+  End
+}</code></pre>
+</article>
+<article class="api" id="split-markdownheading"><h3><span class="kind">struct</span>MarkdownHeading</h3>
+<p>One heading level that starts a new section, and the metadata key its text is filed under.  The key is the caller&#x27;s: <code>MarkdownHeading::new(2, &quot;h2&quot;)</code> files an <code>## Install</code> heading as <code>{&quot;h2&quot;: &quot;Install&quot;}</code>. Levels are unique within a splitter, so a section&#x27;s path has one entry per level.</p>
+<pre class="sig scroll"><code>pub(all) struct MarkdownHeading {
+  level : Int32
+  key : String
+}</code></pre>
+<div class="member" id="split-markdownheading-defaults"><pre class="sig scroll"><code>pub fn MarkdownHeading::defaults() -&gt; Array[Self]</code></pre><p>The six ATX levels, filed as <code>h1</code> … <code>h6</code>.</p></div>
+<div class="member" id="split-markdownheading-new"><pre class="sig scroll"><code>pub fn MarkdownHeading::new(Int32, String) -&gt; Self raise</code></pre><p>A heading level <code>1</code> to <code>6</code> filed under <code>key</code>.  Raises <code>Exceeded</code> when <code>level</code> is outside that range and <code>Empty</code> when <code>key</code> is blank.</p></div>
+</article>
+<article class="api" id="split-markdownsplitter"><h3><span class="kind">struct</span>MarkdownSplitter</h3>
+<p>Cuts a Markdown document at its headings.  A chunk never crosses a heading, and carries the whole path down to it — <code>h1</code>, <code>h2</code> and so on — so a retrieved passage can say which section of which page it came from. A section longer than <code>chunk_size</code> is cut again by the recursive splitter at block boundaries; a code block is emitted whole however long it is, because cutting it would leave a fragment that neither compiles nor reads.</p>
+<pre class="sig scroll"><code>pub struct MarkdownSplitter {
+  chunk_size : Int32
+  chunk_overlap : Int32
+  headings : Array[MarkdownHeading]
+  strip_headers : Bool
+  fallback : RecursiveSplitter
+}</code></pre>
+<div class="member" id="split-markdownsplitter-new"><pre class="sig scroll"><code>pub fn MarkdownSplitter::new(chunk_size? : Int32, chunk_overlap? : Int32, headings? : Array[MarkdownHeading], strip_headers? : Bool) -&gt; Self raise</code></pre><p>A splitter producing sections of at most <code>chunk_size</code> code points.  <code>headings</code> is the set of levels that start a new chunk; a heading of a level not listed stays in the text of the section around it. <code>strip_headers</code> drops the heading line itself from the chunk — on by default, because the heading is in the metadata and repeating it wastes an embedding slot.  Raises <code>Empty</code> when <code>chunk_size</code> is not positive, <code>Exceeded</code> when <code>chunk_overlap</code> is negative or larger than <code>chunk_size</code> or when two headings share a level.</p></div>
+<div class="member" id="split-markdownsplitter-split"><pre class="sig scroll"><code>pub fn MarkdownSplitter::split(Self, @moonrag.Document) -&gt; Array[@moonrag.Document]</code></pre></div>
+<div class="member" id="split-markdownsplitter-split_markdown"><pre class="sig scroll"><code>pub fn MarkdownSplitter::split_markdown(Self, String, meta? : Map[String, @json.Json]) -&gt; Array[@moonrag.Document]</code></pre><p>The documents <code>markdown</code> splits into, filed under <code>meta</code> as well as their heading path — the same result as <code>split</code> on a document, for a caller that has the text and nothing else.</p></div>
+<div class="member" id="split-markdownsplitter-split_text"><pre class="sig scroll"><code>pub fn MarkdownSplitter::split_text(Self, String) -&gt; Array[String]</code></pre><p>The text of the chunks <code>text</code> splits into.</p></div>
+</article>
+<article class="api" id="split-recursivesplitter"><h3><span class="kind">struct</span>RecursiveSplitter</h3>
+<p>Cuts text by trying a list of separators from coarse to fine.  Paragraphs first, then lines, then words, then characters: a piece that still does not fit is split again by the next separator, so the result respects natural boundaries for as long as it can and only cuts mid-word when the text leaves no choice.</p>
+<pre class="sig scroll"><code>pub struct RecursiveSplitter {
+  chunk_size : Int32
+  chunk_overlap : Int32
+  separators : Array[String]
+  keep_separator : KeepSeparator
+  strip_whitespace : Bool
+  add_start_index : Bool
+  measure : (StringView) -&gt; Int32
+}</code></pre>
+<div class="member" id="split-recursivesplitter-new"><pre class="sig scroll"><code>pub fn RecursiveSplitter::new(chunk_size? : Int32, chunk_overlap? : Int32, separators? : Array[String], keep_separator? : KeepSeparator, strip_whitespace? : Bool, add_start_index? : Bool, measure? : (StringView) -&gt; Int32) -&gt; Self raise</code></pre><p>A splitter producing pieces of at most <code>chunk_size</code> units, where a unit is one code point unless <code>measure</code> says otherwise.  <code>chunk_overlap</code> carries that many units of the previous piece into the next one so a sentence cut across a boundary is still readable in one of them; the defaults (<code>4000</code> and <code>200</code>) are the ones most chunking pipelines assume. <code>keep_separator</code> decides whether the separator stays at the start of the following piece, at the end of the preceding one, or is dropped.  Raises <code>Empty</code> when <code>chunk_size</code> is not positive, and <code>Exceeded</code> when <code>chunk_overlap</code> is negative or larger than <code>chunk_size</code>.</p></div>
+<div class="member" id="split-recursivesplitter-split"><pre class="sig scroll"><code>pub fn RecursiveSplitter::split(Self, @moonrag.Document) -&gt; Array[@moonrag.Document]</code></pre></div>
+<div class="member" id="split-recursivesplitter-split_text"><pre class="sig scroll"><code>pub fn RecursiveSplitter::split_text(Self, String) -&gt; Array[String]</code></pre><p>The chunks <code>text</code> splits into. Public because a caller sometimes wants the strings without the document bookkeeping.</p></div>
+<div class="member" id="split-recursivesplitter-split_with_offsets"><pre class="sig scroll"><code>pub fn RecursiveSplitter::split_with_offsets(Self, String) -&gt; Array[(String, Int32)]</code></pre><p>The chunks <code>text</code> splits into, paired with the offset each started at.</p></div>
+</article>
+<article class="api" id="split-tokensplitter"><h3><span class="kind">struct</span>TokenSplitter</h3>
+<p>Cuts text into chunks of at most <code>chunk_size</code> tokens, where <code>measure</code> counts tokens.  The pieces the text is cut into are the units <code>separator</code> delimits (a space by default), and each chunk is measured with <code>measure</code> on the assembled text, so the promise holds for the caller&#x27;s real tokenizer rather than for an estimate.</p>
+<pre class="sig scroll"><code>pub struct TokenSplitter {
+  chunk_size : Int32
+  chunk_overlap : Int32
+  separator : String
+  strip_whitespace : Bool
+  measure : (StringView) -&gt; Int32
+}</code></pre>
+<div class="member" id="split-tokensplitter-new"><pre class="sig scroll"><code>pub fn TokenSplitter::new((StringView) -&gt; Int32, chunk_size? : Int32, chunk_overlap? : Int32, separator? : String, strip_whitespace? : Bool) -&gt; Self raise</code></pre><p>A splitter whose <code>chunk_size</code> and <code>chunk_overlap</code> are counted in <code>measure</code>&#x27;s units.  Defaults are <code>512</code> and <code>64</code> tokens, the window most embedding models accept. Raises <code>Empty</code> when <code>chunk_size</code> is not positive, and <code>Exceeded</code> when <code>chunk_overlap</code> is negative or larger than <code>chunk_size</code>.</p></div>
+<div class="member" id="split-tokensplitter-split"><pre class="sig scroll"><code>pub fn TokenSplitter::split(Self, @moonrag.Document) -&gt; Array[@moonrag.Document]</code></pre></div>
+<div class="member" id="split-tokensplitter-split_text"><pre class="sig scroll"><code>pub fn TokenSplitter::split_text(Self, String) -&gt; Array[String]</code></pre><p>The chunks <code>text</code> splits into, each within the token budget.</p></div>
+</article>
+<h3 id="split-fns">Functions</h3>
+<div class="member" id="split-html_text"><pre class="sig scroll"><code>pub fn html_text(String) -&gt; String</code></pre><p>The readable text of a HTML page: block boundaries become line breaks, markup, scripts, styles and headings-of-nothing are dropped. A loader and a splitter both read a page through this, so they cannot disagree about what it says.</p></div>
+<div class="member" id="split-html_title"><pre class="sig scroll"><code>pub fn html_title(String) -&gt; String?</code></pre><p>The page title: <code>&lt;title&gt;</code>, or the first <code>h1</code> when the page has none.</p></div>
+</section>
+<section id="load-top"><h2>load</h2><p>Text, CSV, JSON, Markdown and HTML into documents, from bytes already in memory.</p>
+<article class="api" id="load-csvloader"><h3><span class="kind">struct</span>CsvLoader</h3>
+<p>A CSV table, one document per row.  The document text is the row spelled out as <code>column: value</code> lines, which reads better to a model than a comma-separated line, and every column is also in the metadata under its header name.</p>
+<pre class="sig scroll"><code>pub struct CsvLoader {
+  source : String
+  text : String
+  has_header : Bool
+  delimiter : Char
+}</code></pre>
+<div class="member" id="load-csvloader-new"><pre class="sig scroll"><code>pub fn CsvLoader::new(String, String, has_header? : Bool, delimiter? : Char) -&gt; Self</code></pre><p>A loader over <code>text</code>. With <code>has_header</code> the first record names the columns; without it the columns are <code>column_0</code>, <code>column_1</code>, … Raises <code>Malformed</code> when a quoted field is never closed.</p></div>
+</article>
+<article class="api" id="load-htmlloader"><h3><span class="kind">struct</span>HtmlLoader</h3>
+<p>A HTML page as one document of readable text.</p>
+<pre class="sig scroll"><code>pub struct HtmlLoader {
+  source : String
+  text : String
+}</code></pre>
+<div class="member" id="load-htmlloader-new"><pre class="sig scroll"><code>pub fn HtmlLoader::new(String, String) -&gt; Self</code></pre><p>A loader over a HTML text.</p></div>
+</article>
+<article class="api" id="load-jsonloader"><h3><span class="kind">struct</span>JsonLoader</h3>
+<p>A JSON document, one document per element when the top level is an array.  With <code>text_key</code> the named field becomes the text and the rest of the object becomes metadata — which is how a corpus exported as <code>[{&quot;title&quot;: ..., &quot;body&quot;: ...}]</code> becomes documents without a transformation step. Without it, an object&#x27;s <code>text</code> field is used, and failing that the object is written out as JSON so nothing is silently lost.</p>
+<pre class="sig scroll"><code>pub struct JsonLoader {
+  source : String
+  text : String
+  text_key : String?
+}</code></pre>
+<div class="member" id="load-jsonloader-new"><pre class="sig scroll"><code>pub fn JsonLoader::new(String, String, text_key? : String) -&gt; Self</code></pre><p>A loader over a JSON text.</p></div>
+</article>
+<article class="api" id="load-markdownloader"><h3><span class="kind">struct</span>MarkdownLoader</h3>
+<p>A Markdown file as one document, with its first heading as the <code>title</code> metadata.</p>
+<pre class="sig scroll"><code>pub struct MarkdownLoader {
+  source : String
+  text : String
+}</code></pre>
+<div class="member" id="load-markdownloader-new"><pre class="sig scroll"><code>pub fn MarkdownLoader::new(String, String) -&gt; Self</code></pre><p>A loader over a Markdown text.</p></div>
+</article>
+<article class="api" id="load-textloader"><h3><span class="kind">struct</span>TextLoader</h3>
+<p>A whole text as a single document, with <code>source</code> recorded in its metadata.  Use it for a note, a log line, a field already read from somewhere else: anything whose text is the document rather than a container for documents.</p>
+<pre class="sig scroll"><code>pub struct TextLoader {
+  source : String
+  text : String
+}</code></pre>
+<div class="member" id="load-textloader-new"><pre class="sig scroll"><code>pub fn TextLoader::new(String, String) -&gt; Self</code></pre><p>A loader over <code>text</code>, labelling the document with <code>source</code>.</p></div>
+</article>
+</section>
+<section id="file-top"><h2>load/file</h2><p>The same loaders reading from disk. Native only: a filesystem is not something every target has.</p>
+</section>
+<section id="index-top"><h2>index</h2><p>Incremental indexing: a content hash per id, so a second run over an unchanged corpus embeds nothing.</p>
+<article class="api" id="index-cleanup"><h3><span class="kind">enum</span>Cleanup</h3>
+<p>What to do about documents that were indexed before and are absent from this run.</p>
+<pre class="sig scroll"><code>pub(all) enum Cleanup {
+  Incremental
+  Full
+  None
+}</code></pre>
+<dl class="fields"><dt><code>Incremental</code></dt><dd><p>Delete the ones whose source appears in this run and whose id does not — the file was rewritten.</p></dd><dt><code>Full</code></dt><dd><p>Delete every one whose id does not appear, whoever its source.</p></dd><dt><code>None</code></dt><dd><p>Delete nothing: the run only adds and updates.</p></dd></dl>
+</article>
+<article class="api" id="index-indexer"><h3><span class="kind">struct</span>Indexer</h3>
+<p>Keeps a store and a record of what it holds in step.  <code>index</code> is the only operation: hand it the documents a source produces now, and it adds the new ones, replaces the changed ones, leaves the unchanged ones alone, and — depending on <code>cleanup</code> — removes the ones that disappeared.</p>
+<pre class="sig scroll"><code>pub struct Indexer {
+  store : &amp;@moonrag.VectorStore
+  source_key : String
+  mut records : Array[(String, Bytes, String?)]
+}</code></pre>
+<div class="member" id="index-indexer-ids"><pre class="sig scroll"><code>pub fn Indexer::ids(Self) -&gt; Array[String]</code></pre><p>The ids the indexer holds, in the order they were first indexed.</p></div>
+<div class="member" id="index-indexer-len"><pre class="sig scroll"><code>pub fn Indexer::len(Self) -&gt; Int32</code></pre><p>The number of documents this indexer has recorded.</p></div>
+<div class="member" id="index-indexer-new"><pre class="sig scroll"><code>pub fn Indexer::new(&amp;@moonrag.VectorStore, source_key? : String) -&gt; Self</code></pre><p>An indexer over <code>store</code>. <code>source_key</code> names the metadata key that identifies where a document came from; the default is <code>source</code>, the key every loader writes.</p></div>
+</article>
+<article class="api" id="index-stats"><h3><span class="kind">struct</span>Stats</h3>
+<p>What one <code>index</code> call did.</p>
+<pre class="sig scroll"><code>pub(all) struct Stats {
+  mut added : Int32
+  mut updated : Int32
+  mut skipped : Int32
+  mut deleted : Int32
+}</code></pre>
+</article>
+</section>
+<section id="sql-top"><h2>sql</h2><p>The same store over a table, for any driver implementing moondb&#x27;s AsyncDriver. PostgreSQL with pgvector ranks in the statement; SQLite ranks in this process.</p>
+<article class="api" id="sql-blockingdriver"><h3><span class="kind">struct</span>BlockingDriver</h3>
+<p>An <code>AsyncDriver</code> over a driver that blocks.  SQLite reads a local file: there is nothing to wait for, so wrapping it in an async contract costs one trait implementation and no threads. A network backend should implement <code>AsyncDriver</code> itself, where the wait is real.</p>
+<pre class="sig scroll"><code>pub struct BlockingDriver[T] {
+  inner : T
+}</code></pre>
+<div class="member" id="sql-blockingdriver-capabilities"><pre class="sig scroll"><code>pub fn[T : @moondb.Driver] BlockingDriver::capabilities(Self[T]) -&gt; @moondb.Capabilities</code></pre></div>
+<div class="member" id="sql-blockingdriver-dialect"><pre class="sig scroll"><code>pub fn[T : @moondb.Driver] BlockingDriver::dialect(Self[T]) -&gt; @moondb.Dialect</code></pre></div>
+<div class="member" id="sql-blockingdriver-inner"><pre class="sig scroll"><code>pub fn[T] BlockingDriver::inner(Self[T]) -&gt; T</code></pre><p>The driver this adapter wraps.</p></div>
+<div class="member" id="sql-blockingdriver-new"><pre class="sig scroll"><code>pub fn[T] BlockingDriver::new(T) -&gt; Self[T]</code></pre><p><code>driver</code>, presented as an asynchronous driver.</p></div>
+</article>
+<article class="api" id="sql-sqlvectorstore"><h3><span class="kind">struct</span>SqlVectorStore</h3>
+<p>A <code>VectorStore</code> held in a SQL table, over any driver implementing <code>moondb</code>&#x27;s <code>AsyncDriver</code>.  <code>dimension</code> is the width of the vectors this store holds, fixed when it is constructed because the column has to be declared with it. <code>table</code> is the name to keep rows in; it must be a plain identifier, since it is written into the statement rather than bound as a value.  Raises <code>Empty</code> when <code>dimension</code> is not positive, <code>Malformed</code> when <code>table</code> is not an identifier, and <code>Unsupported</code> for MySQL, which no test here reaches.</p>
+<pre class="sig scroll"><code>pub struct SqlVectorStore[T] {
+  driver : T
+  embedder : &amp;@moonrag.Embedder
+  dimension : Int32
+  table : String
+  mut counter : Int32
+}</code></pre>
+<div class="member" id="sql-sqlvectorstore-new"><pre class="sig scroll"><code>pub fn[T : @moondb.AsyncDriver] SqlVectorStore::new(T, &amp;@moonrag.Embedder, dimension~ : Int32, table? : String) -&gt; Self[T] raise</code></pre></div>
+</article>
+</section>
+        </div>
+
+        <aside class="rail scroll" aria-label="Packages">
+          <div class="rail-head">
+            <span>packages</span>
+            <b data-rail-section>reference</b>
+          </div>
+          <div class="rail-body">
+            <div class="toc">
+              <div class="group"><b>moonrag</b>
+<a href="#moonrag-refused">Refused</a>
+<a href="#moonrag-candidate">Candidate</a>
+<a href="#moonrag-document">Document</a>
+<a href="#moonrag-filter">Filter</a>
+<a href="#moonrag-hashingembedder">HashingEmbedder</a>
+<a href="#moonrag-inmemoryvectorstore">InMemoryVectorStore</a>
+<a href="#moonrag-mmrretriever">MmrRetriever</a>
+<a href="#moonrag-order">Order</a>
+<a href="#moonrag-scored">Scored</a>
+<a href="#moonrag-similarityretriever">SimilarityRetriever</a>
+<a href="#moonrag-embedder">Embedder</a>
+<a href="#moonrag-loader">Loader</a>
+<a href="#moonrag-retriever">Retriever</a>
+<a href="#moonrag-splitter">Splitter</a>
+<a href="#moonrag-vectorstore">VectorStore</a>
+<a href="#moonrag-fns">Functions</a>
+</div>
+<div class="group"><b>split</b>
+<a href="#split-htmlsplitter">HtmlSplitter</a>
+<a href="#split-keepseparator">KeepSeparator</a>
+<a href="#split-markdownheading">MarkdownHeading</a>
+<a href="#split-markdownsplitter">MarkdownSplitter</a>
+<a href="#split-recursivesplitter">RecursiveSplitter</a>
+<a href="#split-tokensplitter">TokenSplitter</a>
+<a href="#split-fns">Functions</a>
+</div>
+<div class="group"><b>load</b>
+<a href="#load-csvloader">CsvLoader</a>
+<a href="#load-htmlloader">HtmlLoader</a>
+<a href="#load-jsonloader">JsonLoader</a>
+<a href="#load-markdownloader">MarkdownLoader</a>
+<a href="#load-textloader">TextLoader</a>
+</div>
+<div class="group"><b>load/file</b>
+</div>
+<div class="group"><b>index</b>
+<a href="#index-cleanup">Cleanup</a>
+<a href="#index-indexer">Indexer</a>
+<a href="#index-stats">Stats</a>
+</div>
+<div class="group"><b>sql</b>
+<a href="#sql-blockingdriver">BlockingDriver</a>
+<a href="#sql-sqlvectorstore">SqlVectorStore</a>
+</div>
+            </div>
+            <p class="rail-note">
+              Signatures are the compiler's own. A method listed inside a type is reached through that
+              type; a function listed under a package is reached through the package.
+            </p>
+          </div>
+        </aside>
+      </main>
+
+      <footer>
+        <span>Apache-2.0</span>
+        <a href="https://github.com/moonbitstack/moonrag">source</a>
+        <a href="https://mooncakes.io/docs/moonbitstack/moonrag">mooncakes</a>
+        <span class="spacer">generated by scripts/gen_api.py</span>
+      </footer>
+    </div>
+
+    <script type="module" src="site.js"></script>
+  </body>
+</html>
