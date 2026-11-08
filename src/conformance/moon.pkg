@@ -1,7 +1,9 @@
 // The authoritative suites: cases ported from the reference implementations this library follows.
 
 import {
+  "moonbitstack/moonrag",
   "moonbitstack/moonrag/split",
+  "moonbitlang/async",
 } for "wbtest"
 
 import {
