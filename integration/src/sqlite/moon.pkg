@@ -1,0 +1,14 @@
+// The standard cases against SQLite: a local file in the shape of a database, no server, no network.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitstack/moonrag/sql",
+  "moonbitstack/moonrag-integration/standard",
+  "moonbitstack/moonsqlite",
+  "moonbitlang/async",
+  "moonbitlang/core/json",
+} for "test"
+
+options(
+  "supported_targets": "native",
+)

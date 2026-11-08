@@ -1,0 +1,18 @@
+// The standard cases against PostgreSQL with pgvector: the backend that ranks vectors itself, so what
+// is exercised here is the statement — the `<=>` operator, the `::vector` cast, the filter in SQL —
+// and not the arithmetic in this process.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitstack/moonrag/sql",
+  "moonbitstack/moonrag-integration/standard",
+  "moonbitstack/moondb",
+  "moonbitstack/moonpostgres",
+  "moonbitlang/async",
+  "moonbitlang/core/env",
+} for "test"
+
+options(
+  "supported_targets": "native",
+  "max_concurrent_tests": 1,
+)

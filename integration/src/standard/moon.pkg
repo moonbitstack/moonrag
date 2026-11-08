@@ -1,0 +1,8 @@
+// The standard vector-store cases, written once and run against every backend: the in-memory store,
+// SQLite, and PostgreSQL with pgvector. A case never touches a backend's own API — it goes through
+// `VectorStore` and `Embedder` — so a store that passes here is a store that behaves.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitlang/core/json",
+}

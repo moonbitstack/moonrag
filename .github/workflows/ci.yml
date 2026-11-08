@@ -70,3 +70,49 @@ jobs:
             [ -f "$dir/SKILL.md" ] || continue
             pipx run --spec skills-ref agentskills validate "$dir"
           done
+
+  integration:
+    permissions:
+      contents: read
+    runs-on: ubuntu-26.04
+    services:
+      pgvector:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ragpass
+          POSTGRES_DB: moonrag
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: install moon
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: post install
+        run: |
+          moon version --all
+          moon update
+
+      - name: the vector-store standard cases run on SQLite, and on PostgreSQL with pgvector
+        env:
+          MOONRAG_LIVE: "1"
+          MOONRAG_PG_HOST: 127.0.0.1
+          MOONRAG_PG_PORT: "5432"
+          MOONRAG_PG_USER: postgres
+          MOONRAG_PG_PASSWORD: ragpass
+          MOONRAG_PG_DATABASE: moonrag
+        run: |
+          cd integration
+          moon test --target native -p moonbitstack/moonrag-integration/sqlite -p moonbitstack/moonrag-integration/pgvector
+

@@ -1,0 +1,31 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonrag-integration/standard"
+
+import {
+  "moonbitstack/moonrag",
+}
+
+// Values
+pub async fn check(&@moonrag.Embedder, async () -> &@moonrag.VectorStore) -> Array[String]
+
+pub fn corpus() -> Array[@moonrag.Document]
+
+pub fn corpus_with_ids() -> Array[@moonrag.Document]
+
+pub fn land_query() -> String
+
+pub fn sea_query() -> String
+
+// Errors
+
+// Types and methods
+pub struct Suite {
+  embedder : &@moonrag.Embedder
+  fresh : async () -> &@moonrag.VectorStore
+  failures : Array[String]
+  mut current : String
+}
+
+// Type aliases
+
+// Traits
