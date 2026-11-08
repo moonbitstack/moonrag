@@ -33,6 +33,8 @@ keywords = [
   "chunk",
   "recursive-splitter",
   "token-splitter",
+  "markdown-splitter",
+  "heading-splitter",
   "html-splitter",
   "markdown",
   "csv",
@@ -52,6 +54,7 @@ source = "src"
 
 import {
   "moonbitlang/async@0.22.5",
+  "moonbitstack/moonmd@0.1.0",
   "moonbitstack/moonxml@0.1.4",
   "moonbitstack/mooncrypt@0.4.12",
   "moonbitstack/moonbase@0.4.3",

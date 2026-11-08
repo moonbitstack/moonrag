@@ -66,16 +66,6 @@ pub fn RecursiveSplitter::new(
 }
 
 ///|
-/// The default unit: one code point, matching `len()` in the reference implementation.
-fn char_count(text : StringView) -> Int32 {
-  let mut count = 0
-  for _ in text {
-    count = count + 1
-  }
-  count
-}
-
-///|
 /// `text` split at each occurrence of the literal `separator`, with the separator kept on the side
 /// `keep_separator` names. An empty separator splits into single code points.
 fn split_at_separator(

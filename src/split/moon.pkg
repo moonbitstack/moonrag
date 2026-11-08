@@ -1,9 +1,12 @@
-// Splitting a document into chunks: recursive separators, token windows, HTML sections.
+// Splitting a document into chunks: recursive separators, token windows, Markdown sections, HTML
+// sections.
 
 import {
   "moonbitstack/moonrag",
+  "moonbitstack/moonmd",
   "moonbitstack/moonxml",
   "moonbitstack/moonxml/html",
+  "moonbitlang/core/json",
 }
 
 import {

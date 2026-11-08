@@ -2,6 +2,7 @@
 package "moonbitstack/moonrag/split"
 
 import {
+  "moonbitlang/core/debug",
   "moonbitlang/core/json",
   "moonbitstack/moonrag",
 }
@@ -28,6 +29,30 @@ pub(all) enum KeepSeparator {
   Start
   End
 }
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MarkdownHeading {
+  level : Int32
+  key : String
+}
+pub fn MarkdownHeading::defaults() -> Array[Self]
+pub fn MarkdownHeading::equal(Self, Self) -> Bool
+pub fn MarkdownHeading::new(Int32, String) -> Self raise
+pub fn MarkdownHeading::not_equal(Self, Self) -> Bool
+pub fn MarkdownHeading::to_repr(Self) -> @debug.Repr
+
+pub struct MarkdownSplitter {
+  chunk_size : Int32
+  chunk_overlap : Int32
+  headings : Array[MarkdownHeading]
+  strip_headers : Bool
+  fallback : RecursiveSplitter
+}
+pub fn MarkdownSplitter::new(chunk_size? : Int32, chunk_overlap? : Int32, headings? : Array[MarkdownHeading], strip_headers? : Bool) -> Self raise
+pub fn MarkdownSplitter::split(Self, @moonrag.Document) -> Array[@moonrag.Document]
+pub fn MarkdownSplitter::split_markdown(Self, String, meta? : Map[String, @json.Json]) -> Array[@moonrag.Document]
+pub fn MarkdownSplitter::split_text(Self, String) -> Array[String]
+pub impl @moonrag.Splitter for MarkdownSplitter
 
 pub struct RecursiveSplitter {
   chunk_size : Int32
