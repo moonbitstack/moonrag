@@ -8,6 +8,12 @@
       name="description"
       content="Every public type, function, method and value of moonbitstack/moonrag, generated from the package interfaces and the doc comments in the sources."
     />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="moonrag — API reference" />
+    <meta property="og:description" content="Every public type, function, method and value of moonbitstack/moonrag, generated from the package interfaces and the doc comments in the sources." />
+    <meta property="og:url" content="https://moonbitstack.github.io/moonrag/api.html" />
+    <meta name="theme-color" content="#f3f3f0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1526" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -51,7 +57,8 @@
             <h1>Every public name, in one place</h1>
             <p class="lead">
               Generated from each package's interface file and the doc comments in its sources, so
-              this page cannot describe a library that is not there.
+              this page cannot describe a library that is not there — and cannot leave a public name
+              out.
             </p>
           </section>
           <section id="moonrag-top"><h2>moonrag</h2><p>Documents, the five contracts, the in-memory store, the retrievers, vector arithmetic and metadata filters.</p>
@@ -107,6 +114,7 @@
 <pre class="sig scroll"><code>pub struct HashingEmbedder {
   dimension : Int32
 }</code></pre>
+<div class="member" id="moonrag-hashingembedder-embed"><pre class="sig scroll"><code>pub async fn HashingEmbedder::embed(Self, ArrayView[String]) -&gt; Array[Array[Double]]</code></pre></div>
 <div class="member" id="moonrag-hashingembedder-new"><pre class="sig scroll"><code>pub fn HashingEmbedder::new(dimension? : Int32) -&gt; Self raise</code></pre><p>A hashing embedder producing <code>dimension</code>-component vectors. <code>256</code> is wide enough that a handful of documents rarely collide and narrow enough to keep a fixture readable.  Raises <code>Empty</code> when <code>dimension</code> is not positive.</p></div>
 </article>
 <article class="api" id="moonrag-inmemoryvectorstore"><h3><span class="kind">struct</span>InMemoryVectorStore</h3>
@@ -116,12 +124,15 @@
   mut entries : Array[(String, Document, Array[Double])]
   mut counter : Int32
 }</code></pre>
+<div class="member" id="moonrag-inmemoryvectorstore-add"><pre class="sig scroll"><code>pub async fn InMemoryVectorStore::add(Self, Array[Document]) -&gt; Array[String]</code></pre></div>
 <div class="member" id="moonrag-inmemoryvectorstore-add_vectors"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::add_vectors(Self, Array[Document], ArrayView[Array[Double]]) -&gt; Array[String] raise</code></pre><p>Store documents that already carry their vectors, returning their ids. An id already present is replaced in place, which is what makes a re-index an update rather than a duplicate.  Raises <code>Mismatch</code> when the vector count differs from the document count or two vectors differ in length, and <code>Empty</code> for a document whose id is the empty string.</p></div>
 <div class="member" id="moonrag-inmemoryvectorstore-clear"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored document.</p></div>
+<div class="member" id="moonrag-inmemoryvectorstore-delete"><pre class="sig scroll"><code>pub async fn InMemoryVectorStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
 <div class="member" id="moonrag-inmemoryvectorstore-get"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::get(Self, String) -&gt; Document?</code></pre><p>The document stored under <code>id</code>, or <code>None</code>. The returned document carries the id it is stored under, so it can be deleted or refetched without keeping the id beside it.</p></div>
 <div class="member" id="moonrag-inmemoryvectorstore-ids"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::ids(Self) -&gt; Array[String]</code></pre><p>The ids of the stored documents, in the order they were added.</p></div>
 <div class="member" id="moonrag-inmemoryvectorstore-len"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::len(Self) -&gt; Int32</code></pre><p>The number of stored documents.</p></div>
 <div class="member" id="moonrag-inmemoryvectorstore-new"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::new(&amp;Embedder) -&gt; Self</code></pre><p>An empty store that embeds with <code>embedder</code>.</p></div>
+<div class="member" id="moonrag-inmemoryvectorstore-search"><pre class="sig scroll"><code>pub async fn InMemoryVectorStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : Filter) -&gt; Array[Scored]</code></pre></div>
 <div class="member" id="moonrag-inmemoryvectorstore-vector_of"><pre class="sig scroll"><code>pub fn InMemoryVectorStore::vector_of(Self, String) -&gt; Array[Double]?</code></pre><p>The vector stored for <code>id</code>, or <code>None</code> — for a caller that reranks hits itself.</p></div>
 </article>
 <article class="api" id="moonrag-mmrretriever"><h3><span class="kind">struct</span>MmrRetriever</h3>
@@ -134,6 +145,7 @@
   fetch_limit : Int32
 }</code></pre>
 <div class="member" id="moonrag-mmrretriever-new"><pre class="sig scroll"><code>pub fn MmrRetriever::new(&amp;Embedder, &amp;VectorStore, lambda? : Double, fetch_limit? : Int32, filter? : Filter) -&gt; Self</code></pre><p>An MMR retriever over <code>store</code>. <code>fetch_limit</code> candidates are ranked by similarity first and then reranked by MMR, so it must be at least the <code>limit</code> a caller asks for; <code>lambda</code> weights relevance against diversity.</p></div>
+<div class="member" id="moonrag-mmrretriever-retrieve"><pre class="sig scroll"><code>pub async fn MmrRetriever::retrieve(Self, String, limit~ : Int32) -&gt; Array[Scored]</code></pre></div>
 </article>
 <article class="api" id="moonrag-order"><h3><span class="kind">enum</span>Order</h3>
 <p>How <code>Compare</code> orders a metadata number against its operand.</p>
@@ -162,6 +174,7 @@
   filter : Filter?
 }</code></pre>
 <div class="member" id="moonrag-similarityretriever-new"><pre class="sig scroll"><code>pub fn SimilarityRetriever::new(&amp;Embedder, &amp;VectorStore, filter? : Filter) -&gt; Self</code></pre><p>A similarity retriever over <code>store</code>, embedding queries with <code>embedder</code>. <code>filter</code> narrows the candidates before ranking, in the store where the documents live.</p></div>
+<div class="member" id="moonrag-similarityretriever-retrieve"><pre class="sig scroll"><code>pub async fn SimilarityRetriever::retrieve(Self, String, limit~ : Int32) -&gt; Array[Scored]</code></pre></div>
 </article>
 <article class="api" id="moonrag-embedder"><h3><span class="kind">trait</span>Embedder</h3>
 <p>Turns batches of text into vectors of equal length.  One call embeds a batch, not a string: every model worth calling charges per request, and a batch is also what makes a re-index affordable. All vectors in a batch must have the same length, and the same text must embed to the same vector — ranking is keyed on that.</p>
@@ -288,6 +301,7 @@
   has_header : Bool
   delimiter : Char
 }</code></pre>
+<div class="member" id="load-csvloader-load"><pre class="sig scroll"><code>pub async fn CsvLoader::load(Self) -&gt; Array[@moonrag.Document]</code></pre></div>
 <div class="member" id="load-csvloader-new"><pre class="sig scroll"><code>pub fn CsvLoader::new(String, String, has_header? : Bool, delimiter? : Char) -&gt; Self</code></pre><p>A loader over <code>text</code>. With <code>has_header</code> the first record names the columns; without it the columns are <code>column_0</code>, <code>column_1</code>, … Raises <code>Malformed</code> when a quoted field is never closed.</p></div>
 </article>
 <article class="api" id="load-htmlloader"><h3><span class="kind">struct</span>HtmlLoader</h3>
@@ -296,6 +310,7 @@
   source : String
   text : String
 }</code></pre>
+<div class="member" id="load-htmlloader-load"><pre class="sig scroll"><code>pub async fn HtmlLoader::load(Self) -&gt; Array[@moonrag.Document]</code></pre></div>
 <div class="member" id="load-htmlloader-new"><pre class="sig scroll"><code>pub fn HtmlLoader::new(String, String) -&gt; Self</code></pre><p>A loader over a HTML text.</p></div>
 </article>
 <article class="api" id="load-jsonloader"><h3><span class="kind">struct</span>JsonLoader</h3>
@@ -305,6 +320,7 @@
   text : String
   text_key : String?
 }</code></pre>
+<div class="member" id="load-jsonloader-load"><pre class="sig scroll"><code>pub async fn JsonLoader::load(Self) -&gt; Array[@moonrag.Document]</code></pre></div>
 <div class="member" id="load-jsonloader-new"><pre class="sig scroll"><code>pub fn JsonLoader::new(String, String, text_key? : String) -&gt; Self</code></pre><p>A loader over a JSON text.</p></div>
 </article>
 <article class="api" id="load-markdownloader"><h3><span class="kind">struct</span>MarkdownLoader</h3>
@@ -313,6 +329,7 @@
   source : String
   text : String
 }</code></pre>
+<div class="member" id="load-markdownloader-load"><pre class="sig scroll"><code>pub async fn MarkdownLoader::load(Self) -&gt; Array[@moonrag.Document]</code></pre></div>
 <div class="member" id="load-markdownloader-new"><pre class="sig scroll"><code>pub fn MarkdownLoader::new(String, String) -&gt; Self</code></pre><p>A loader over a Markdown text.</p></div>
 </article>
 <article class="api" id="load-textloader"><h3><span class="kind">struct</span>TextLoader</h3>
@@ -321,10 +338,18 @@
   source : String
   text : String
 }</code></pre>
+<div class="member" id="load-textloader-load"><pre class="sig scroll"><code>pub async fn TextLoader::load(Self) -&gt; Array[@moonrag.Document]</code></pre></div>
 <div class="member" id="load-textloader-new"><pre class="sig scroll"><code>pub fn TextLoader::new(String, String) -&gt; Self</code></pre><p>A loader over <code>text</code>, labelling the document with <code>source</code>.</p></div>
 </article>
 </section>
 <section id="file-top"><h2>load/file</h2><p>The same loaders reading from disk. Native only: a filesystem is not something every target has.</p>
+<h3 id="file-fns">Functions</h3>
+<div class="member" id="file-csv"><pre class="sig scroll"><code>pub async fn csv(String, has_header? : Bool) -&gt; Array[@moonrag.Document]</code></pre><p>The CSV file at <code>path</code>, one document per row.</p></div>
+<div class="member" id="file-html"><pre class="sig scroll"><code>pub async fn html(String) -&gt; Array[@moonrag.Document]</code></pre><p>The HTML file at <code>path</code>, as readable text.</p></div>
+<div class="member" id="file-json"><pre class="sig scroll"><code>pub async fn json(String, text_key? : String) -&gt; Array[@moonrag.Document]</code></pre><p>The JSON file at <code>path</code>, one document per element when it holds an array.</p></div>
+<div class="member" id="file-markdown"><pre class="sig scroll"><code>pub async fn markdown(String) -&gt; Array[@moonrag.Document]</code></pre><p>The Markdown file at <code>path</code>, titled by its first heading.</p></div>
+<div class="member" id="file-read"><pre class="sig scroll"><code>pub async fn read(String) -&gt; String</code></pre><p>The whole file at <code>path</code> as text.  Raises whatever the filesystem raises for a missing or unreadable file, and refuses text that is not valid UTF-8 rather than substituting replacement characters — a corpus with a silently mangled encoding is worse than one that fails to load.</p></div>
+<div class="member" id="file-text"><pre class="sig scroll"><code>pub async fn text(String) -&gt; Array[@moonrag.Document]</code></pre><p>The file at <code>path</code> as one document.</p></div>
 </section>
 <section id="index-top"><h2>index</h2><p>Incremental indexing: a content hash per id, so a second run over an unchanged corpus embeds nothing.</p>
 <article class="api" id="index-cleanup"><h3><span class="kind">enum</span>Cleanup</h3>
@@ -344,6 +369,7 @@
   mut records : Array[(String, Bytes, String?)]
 }</code></pre>
 <div class="member" id="index-indexer-ids"><pre class="sig scroll"><code>pub fn Indexer::ids(Self) -&gt; Array[String]</code></pre><p>The ids the indexer holds, in the order they were first indexed.</p></div>
+<div class="member" id="index-indexer-index"><pre class="sig scroll"><code>pub async fn Indexer::index(Self, Array[@moonrag.Document], cleanup? : Cleanup) -&gt; Stats</code></pre><p>Bring the store in line with <code>documents</code>, returning what changed.  A document whose id is already indexed with the same content is skipped, so the expensive part — embedding — does not happen twice. A document with the same id and different content replaces the stored one; there is never a second copy of one id.</p></div>
 <div class="member" id="index-indexer-len"><pre class="sig scroll"><code>pub fn Indexer::len(Self) -&gt; Int32</code></pre><p>The number of documents this indexer has recorded.</p></div>
 <div class="member" id="index-indexer-new"><pre class="sig scroll"><code>pub fn Indexer::new(&amp;@moonrag.VectorStore, source_key? : String) -&gt; Self</code></pre><p>An indexer over <code>store</code>. <code>source_key</code> names the metadata key that identifies where a document came from; the default is <code>source</code>, the key every loader writes.</p></div>
 </article>
@@ -363,10 +389,19 @@
 <pre class="sig scroll"><code>pub struct BlockingDriver[T] {
   inner : T
 }</code></pre>
+<div class="member" id="sql-blockingdriver-begin"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::begin(Self[T]) -&gt; Unit raise @moondb.DbError</code></pre></div>
 <div class="member" id="sql-blockingdriver-capabilities"><pre class="sig scroll"><code>pub fn[T : @moondb.Driver] BlockingDriver::capabilities(Self[T]) -&gt; @moondb.Capabilities</code></pre></div>
+<div class="member" id="sql-blockingdriver-close"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::close(Self[T]) -&gt; Unit</code></pre></div>
+<div class="member" id="sql-blockingdriver-commit"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::commit(Self[T]) -&gt; Unit raise @moondb.DbError</code></pre></div>
 <div class="member" id="sql-blockingdriver-dialect"><pre class="sig scroll"><code>pub fn[T : @moondb.Driver] BlockingDriver::dialect(Self[T]) -&gt; @moondb.Dialect</code></pre></div>
+<div class="member" id="sql-blockingdriver-execute"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::execute(Self[T], String, Array[@moondb.Value]) -&gt; @moondb.ExecResult raise @moondb.DbError</code></pre></div>
 <div class="member" id="sql-blockingdriver-inner"><pre class="sig scroll"><code>pub fn[T] BlockingDriver::inner(Self[T]) -&gt; T</code></pre><p>The driver this adapter wraps.</p></div>
 <div class="member" id="sql-blockingdriver-new"><pre class="sig scroll"><code>pub fn[T] BlockingDriver::new(T) -&gt; Self[T]</code></pre><p><code>driver</code>, presented as an asynchronous driver.</p></div>
+<div class="member" id="sql-blockingdriver-ping"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::ping(Self[T]) -&gt; Bool</code></pre></div>
+<div class="member" id="sql-blockingdriver-prepare"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::prepare(Self[T], String) -&gt; &amp;@moondb.AsyncStmt raise @moondb.DbError</code></pre></div>
+<div class="member" id="sql-blockingdriver-query"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::query(Self[T], String, Array[@moondb.Value]) -&gt; Array[@moondb.Row] raise @moondb.DbError</code></pre></div>
+<div class="member" id="sql-blockingdriver-query_stream"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::query_stream(Self[T], String, Array[@moondb.Value]) -&gt; &amp;@moondb.AsyncCursor raise @moondb.DbError</code></pre></div>
+<div class="member" id="sql-blockingdriver-rollback"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::rollback(Self[T]) -&gt; Unit raise @moondb.DbError</code></pre></div>
 </article>
 <article class="api" id="sql-sqlvectorstore"><h3><span class="kind">struct</span>SqlVectorStore</h3>
 <p>A <code>VectorStore</code> held in a SQL table, over any driver implementing <code>moondb</code>&#x27;s <code>AsyncDriver</code>.  <code>dimension</code> is the width of the vectors this store holds, fixed when it is constructed because the column has to be declared with it. <code>table</code> is the name to keep rows in; it must be a plain identifier, since it is written into the statement rather than bound as a value.  Raises <code>Empty</code> when <code>dimension</code> is not positive, <code>Malformed</code> when <code>table</code> is not an identifier, and <code>Unsupported</code> for MySQL, which no test here reaches.</p>
@@ -377,7 +412,14 @@
   table : String
   mut counter : Int32
 }</code></pre>
+<div class="member" id="sql-sqlvectorstore-add"><pre class="sig scroll"><code>pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::add(Self[T], Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
+<div class="member" id="sql-sqlvectorstore-clear"><pre class="sig scroll"><code>pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::clear(Self[T]) -&gt; Unit</code></pre><p>Remove every stored document, keeping the table.</p></div>
+<div class="member" id="sql-sqlvectorstore-create"><pre class="sig scroll"><code>pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::create(Self[T]) -&gt; Unit</code></pre><p>Create the table this store needs, and on PostgreSQL the extension and the index. Safe to call on every start: every statement is <code>IF NOT EXISTS</code>.</p></div>
+<div class="member" id="sql-sqlvectorstore-delete"><pre class="sig scroll"><code>pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::delete(Self[T], ArrayView[String]) -&gt; Unit</code></pre></div>
+<div class="member" id="sql-sqlvectorstore-get"><pre class="sig scroll"><code>pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::get(Self[T], String) -&gt; @moonrag.Document?</code></pre><p>The document stored under <code>id</code>, or <code>None</code>.</p></div>
+<div class="member" id="sql-sqlvectorstore-len"><pre class="sig scroll"><code>pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::len(Self[T]) -&gt; Int64</code></pre><p>The number of stored documents.</p></div>
 <div class="member" id="sql-sqlvectorstore-new"><pre class="sig scroll"><code>pub fn[T : @moondb.AsyncDriver] SqlVectorStore::new(T, &amp;@moonrag.Embedder, dimension~ : Int32, table? : String) -&gt; Self[T] raise</code></pre></div>
+<div class="member" id="sql-sqlvectorstore-search"><pre class="sig scroll"><code>pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::search(Self[T], ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
 </article>
 </section>
         </div>
@@ -424,6 +466,7 @@
 <a href="#load-textloader">TextLoader</a>
 </div>
 <div class="group"><b>load/file</b>
+<a href="#file-fns">Functions</a>
 </div>
 <div class="group"><b>index</b>
 <a href="#index-cleanup">Cleanup</a>

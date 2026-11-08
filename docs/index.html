@@ -8,6 +8,12 @@
       name="description"
       content="A retrieval pipeline for MoonBit: documents, splitters, a vector store in memory or in SQL, and retrievers that rank. Embeddings arrive through a contract, so nothing here calls a model."
     />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="moonrag — documents, splitting, vectors, retrieval" />
+    <meta property="og:description" content="A retrieval pipeline for MoonBit: documents, splitters, a vector store in memory or in SQL, and retrievers that rank. Embeddings arrive through a contract, so nothing here calls a model." />
+    <meta property="og:url" content="https://moonbitstack.github.io/moonrag/" />
+    <meta name="theme-color" content="#f3f3f0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1526" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -56,8 +62,8 @@
             <p class="lead">
               A retrieval pipeline for MoonBit: documents, splitters, a vector store in memory or in
               SQL, and retrievers that rank. Embeddings arrive through a contract, so nothing here
-              calls a model — and every number on this page is computed by this library, compiled to
-              JavaScript.
+              calls a model — and the numbers in the panels below are computed by this library,
+              compiled to JavaScript from the sources it ships.
             </p>
 
             <div class="figure" data-splitter>
@@ -200,10 +206,11 @@ score  = 0.9 / 0.911043… = 0.9878783399072131</code></pre>
 
           <section data-label="dedupe">
             <div class="section-label"><b>03</b> <span>rerank</span></div>
-            <h2>Five copies of one passage</h2>
+            <h2>The same subject, three times</h2>
             <p>
-              A plain search on a corpus of near-duplicates fills the answer with the same paragraph.
-              MMR reranks the candidates against each other, trading relevance for coverage: near
+              A plain search on a corpus that says one thing several ways fills the answer with that
+              thing: the harbour at dawn, the harbour at dusk, the harbour wall. MMR reranks the
+              candidates against each other, trading relevance for coverage: near
               <code>lambda = 1</code> it behaves like a plain search, near <code>0</code> like "the
               most different thing still related to the question".
             </p>
@@ -357,7 +364,8 @@ score  = 0.9 / 0.911043… = 0.9878783399072131</code></pre>
             <div data-rail-hits></div>
             <p class="rail-note">
               Both lists are filled by this library, running in the page. Drag a control and the rail
-              moves with it.
+              moves with it. Under MMR the order is chosen for coverage, so the scores below need not
+              descend.
             </p>
           </div>
         </aside>

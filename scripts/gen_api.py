@@ -52,7 +52,9 @@ PACKAGES = [
 ]
 
 DECL = re.compile(
-    r"^pub(?:\((?:all|open)\))?\s+(fn(?:\[[^\]]*\])?|let|struct|enum|suberror|trait|type)\s+([A-Za-z_][\w]*(?:::[A-Za-z_][\w]*)?)"
+    r"^pub(?:\((?:all|open)\))?\s+(?:async\s+)?"
+    r"(fn(?:\[[^\]]*\])?|let|struct|enum|suberror|trait|type)\s+"
+    r"([A-Za-z_][\w]*(?:::[A-Za-z_][\w]*)?)"
 )
 
 
@@ -119,11 +121,11 @@ def items_of(folder: pathlib.Path) -> list[tuple[str, str, str, str | None]]:
         if match:
             items.append((match.group(1), match.group(2), line, None))
             continue
-        match = re.match(r"pub fn(?:\[[^\]]*\])?\s+(\w+)::(\w+)", line)
+        match = re.match(r"pub (?:async )?fn(?:\[[^\]]*\])?\s+(\w+)::(\w+)", line)
         if match:
             items.append(("method", match.group(1) + "::" + match.group(2), line, match.group(1)))
             continue
-        match = re.match(r"pub fn(?:\[[^\]]*\])?\s+(\w+)", line)
+        match = re.match(r"pub (?:async )?fn(?:\[[^\]]*\])?\s+(\w+)", line)
         if match:
             items.append(("fn", match.group(1), line, None))
             continue

@@ -1,7 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="5" fill="#131210"/>
-  <rect x="7" y="8" width="18" height="3" fill="#ede7da"/>
-  <rect x="7" y="14.5" width="13" height="3" fill="#ede7da"/>
-  <rect x="7" y="21" width="18" height="3" fill="#ede7da"/>
-  <rect x="22.5" y="8" width="2.5" height="16" fill="#e8a33d"/>
+  <style>
+    /* The same two stones as the site: platinum on a light browser, lapis on a dark one. */
+    .ground { fill: #f3f3f0; }
+    .rule { fill: #1a1c1e; }
+    .mark { fill: #2c477a; }
+    @media (prefers-color-scheme: dark) {
+      .ground { fill: #0b1526; }
+      .rule { fill: #eceff5; }
+      .mark { fill: #93b4e2; }
+    }
+  </style>
+  <rect class="ground" width="32" height="32" rx="5" />
+  <rect class="rule" x="7" y="8" width="18" height="2.5" />
+  <rect class="rule" x="7" y="14.75" width="13" height="2.5" />
+  <rect class="rule" x="7" y="21.5" width="18" height="2.5" />
+  <rect class="mark" x="22.5" y="8" width="2.5" height="16" />
 </svg>

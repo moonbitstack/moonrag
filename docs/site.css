@@ -1,35 +1,50 @@
-/* moonrag — a proof sheet: paper, ink, one amber mark. Hairlines instead of cards, tabular numerals
-   instead of badges, crop marks instead of shadows. Both themes are written out; nothing is derived
-   from a gradient. */
+/* moonrag — a proof sheet cut in two stones: platinum by day, lapis by night. Hairlines instead of
+   cards, tabular numerals instead of badges, crop marks instead of shadows. Both themes are written
+   out; nothing here is derived from a gradient. */
 
 :root {
-  --paper: #f6f3ea;
-  --surface: #fcfaf3;
-  --ink: #1c1a16;
-  --muted: #6e6a60;
-  --faint: #938e82;
-  --rule: #d9d3c4;
-  --rule-strong: #b9b2a0;
-  --accent: #8a4b0f;
-  --accent-soft: #f0e3cd;
+  /* platinum: a neutral white metal, its rules a shade lighter than the sheet, its ink graphite. */
+  --paper: #f3f3f0;
+  --surface: #fbfbf9;
+  --well: #eaeae7;
+  --ink: #1a1c1e;
+  --muted: #54585c;
+  --faint: #6b6f73;
+  --rule: #dfdfdb;
+  --rule-strong: #b7b6b1;
+  --accent: #3e4a55;
+  --accent-soft: #e7e8e6;
+  --on-accent: #fbfbf9;
   --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
   --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --rail: 268px;
-  --gap: 48px;
+  --rail: 272px;
+  --gap: 56px;
+  /* one step, used everywhere: 6 · 10 · 14 · 20 · 26 · 34 · 44 · 56 */
+  --s1: 6px;
+  --s2: 10px;
+  --s3: 14px;
+  --s4: 20px;
+  --s5: 26px;
+  --s6: 34px;
+  --s7: 44px;
+  --s8: 56px;
   color-scheme: light;
 }
 
 [data-theme="dark"] {
-  --paper: #131210;
-  --surface: #1a1916;
-  --ink: #ede7da;
-  --muted: #9b958a;
-  --faint: #7d776c;
-  --rule: #2c2924;
-  --rule-strong: #423d35;
-  --accent: #e8a33d;
-  --accent-soft: #2a2118;
+  /* lapis: the ground is the stone, the accent the flecks the stone is ground for. */
+  --paper: #0b1526;
+  --surface: #12203a;
+  --well: #091120;
+  --ink: #e9edf5;
+  --muted: #9da9bd;
+  --faint: #8592a7;
+  --rule: #1d2a44;
+  --rule-strong: #2d3d5c;
+  --accent: #93b4e2;
+  --accent-soft: #17243d;
+  --on-accent: #0a1220;
   color-scheme: dark;
 }
 
@@ -57,7 +72,7 @@ body {
   color: var(--ink);
   font-family: var(--sans);
   font-size: 15px;
-  line-height: 1.65;
+  line-height: 1.62;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -175,9 +190,9 @@ header {
   z-index: 20;
   display: flex;
   align-items: center;
-  gap: 24px;
-  height: 56px;
-  padding: 0 24px;
+  gap: 26px;
+  height: 58px;
+  padding: 0 26px;
   background: color-mix(in srgb, var(--paper) 92%, transparent);
   backdrop-filter: saturate(140%) blur(6px);
   border-bottom: 1px solid var(--rule);
@@ -205,7 +220,7 @@ header {
 header nav {
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 24px;
   margin-left: auto;
   font-size: 13px;
   color: var(--muted);
@@ -258,25 +273,28 @@ header nav a[aria-current="page"] {
 .shell {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 26px;
 }
 
 main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--rail);
   gap: var(--gap);
-  padding: 40px 0 96px;
+  padding: var(--s7) 0 88px;
   align-items: start;
 }
 
 main.wide {
   grid-template-columns: minmax(0, 1fr);
   max-width: 900px;
+  /* One column, so the grid gap would land between sections and double their seam. */
+  gap: 0;
 }
 
 section {
-  padding: 44px 0 8px;
+  padding: var(--s8) 0 var(--s8);
   border-top: 1px solid var(--rule);
+  scroll-margin-top: 78px;
 }
 
 section:first-child {
@@ -284,15 +302,29 @@ section:first-child {
   padding-top: 0;
 }
 
+section:last-child {
+  padding-bottom: 0;
+}
+
+/* The seam between two sections is the rule and the padding on either side of it, so no child is
+   allowed to add a margin of its own at the top or the bottom. */
+section > :first-child {
+  margin-top: 0;
+}
+
+section > :last-child {
+  margin-bottom: 0;
+}
+
 /* ---------- typography ---------------------------------------------------------------- */
 
 .eyebrow {
   font-family: var(--mono);
   font-size: 11px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: var(--accent);
   text-transform: uppercase;
-  margin: 0 0 14px;
+  margin: 0 0 var(--s3);
 }
 
 h1 {
@@ -301,7 +333,7 @@ h1 {
   font-size: clamp(32px, 4.4vw, 46px);
   line-height: 1.1;
   letter-spacing: -0.02em;
-  margin: 0 0 18px;
+  margin: 0 0 var(--s4);
   max-width: 16ch;
 }
 
@@ -311,14 +343,14 @@ h2 {
   font-size: 27px;
   line-height: 1.2;
   letter-spacing: -0.015em;
-  margin: 0 0 6px;
+  margin: 0 0 var(--s3);
 }
 
 h3 {
   font-family: var(--sans);
   font-weight: 600;
   font-size: 15px;
-  margin: 30px 0 8px;
+  margin: var(--s6) 0 var(--s3);
 }
 
 .section-label {
@@ -328,7 +360,7 @@ h3 {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--faint);
-  margin-bottom: 14px;
+  margin-bottom: var(--s3);
 }
 
 .section-label b {
@@ -341,7 +373,7 @@ h3 {
   font-size: 18px;
   line-height: 1.55;
   color: var(--ink);
-  margin: 0 0 20px;
+  margin: 0 0 var(--s5);
   max-width: 62ch;
 }
 
@@ -352,7 +384,7 @@ ol {
 }
 
 p {
-  margin: 0 0 14px;
+  margin: 0 0 var(--s3);
   color: var(--ink);
 }
 
@@ -371,7 +403,7 @@ ul {
 }
 
 li {
-  margin-bottom: 6px;
+  margin-bottom: var(--s1);
 }
 
 li::marker {
@@ -381,15 +413,15 @@ li::marker {
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin: 22px 0 0;
+  gap: var(--s2);
+  margin: var(--s5) 0 0;
 }
 
 .button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 16px;
+  padding: 10px 18px;
   border: 1px solid var(--rule-strong);
   border-radius: 6px;
   font-size: 13.5px;
@@ -405,22 +437,25 @@ li::marker {
 .button.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--paper);
-}
-
-[data-theme="dark"] .button.primary {
-  color: #17130d;
+  color: var(--on-accent);
 }
 
 .button.primary:hover {
-  filter: brightness(1.06);
+  background: color-mix(in srgb, var(--accent) 88%, var(--ink));
+  border-color: color-mix(in srgb, var(--accent) 88%, var(--ink));
+  color: var(--on-accent);
+}
+
+[data-theme="dark"] .button.primary:hover {
+  background: color-mix(in srgb, var(--accent) 88%, #ffffff);
+  border-color: color-mix(in srgb, var(--accent) 88%, #ffffff);
 }
 
 /* ---------- figures ------------------------------------------------------------------- */
 
 .figure {
   position: relative;
-  margin: 26px 0 10px;
+  margin: var(--s5) 0 0;
   border: 1px solid var(--rule);
   background: var(--surface);
   border-radius: 4px;
@@ -453,8 +488,8 @@ li::marker {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  gap: var(--s3);
+  padding: var(--s2) 16px;
   border-bottom: 1px solid var(--rule);
   font-family: var(--mono);
   font-size: 10.5px;
@@ -466,14 +501,32 @@ li::marker {
 }
 
 .figure-body {
-  padding: 16px;
+  padding: 18px 16px 16px;
 }
 
 .caption {
   font-family: var(--mono);
   font-size: 11px;
+  line-height: 1.6;
   color: var(--faint);
-  margin: 8px 0 0;
+  margin: var(--s2) 0 0;
+  max-width: 68ch;
+}
+
+/* A code block, a table, a list of fields and a row of buttons carry no bottom margin: the gap is
+   the follower's. A caption is the exception — it belongs to what it sits under. */
+pre + *,
+table.grid + *,
+dl.fields + *,
+.shell-cmd + *,
+.actions + * {
+  margin-top: var(--s4);
+}
+
+pre + .caption,
+table.grid + .caption,
+.figure + .caption {
+  margin-top: var(--s2);
 }
 
 /* ---------- controls ------------------------------------------------------------------ */
@@ -502,7 +555,7 @@ li::marker {
 }
 
 .segmented button[aria-pressed="true"] {
-  background: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
   color: var(--accent);
 }
 
@@ -510,11 +563,15 @@ li::marker {
   display: grid;
   grid-template-columns: 84px minmax(0, 1fr) 56px;
   align-items: center;
-  gap: 12px;
+  gap: var(--s3);
   font-family: var(--mono);
   font-size: 11px;
   color: var(--muted);
-  margin: 0 0 10px;
+  margin: 0 0 var(--s2);
+}
+
+.control:last-of-type {
+  margin-bottom: var(--s3);
 }
 
 .control output {
@@ -523,20 +580,61 @@ li::marker {
   font-variant-numeric: tabular-nums;
 }
 
+/* A range is a rule with a needle on it: a two-pixel track in the rule colour, a three-pixel
+   accent bar for the handle. No pill, no shadow — the same language as the crop marks. */
 input[type="range"] {
   width: 100%;
-  accent-color: var(--accent);
+  height: 18px;
   margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: ew-resize;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px;
+  background: var(--rule-strong);
+  border-radius: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 3px;
+  height: 14px;
+  margin-top: -6px;
+  border: 0;
+  border-radius: 0;
+  background: var(--accent);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 2px;
+  background: var(--rule-strong);
+  border-radius: 0;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 3px;
+  height: 14px;
+  border: 0;
+  border-radius: 0;
+  background: var(--accent);
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+  background: color-mix(in srgb, var(--accent) 82%, var(--ink));
 }
 
 textarea {
   width: 100%;
   min-height: 150px;
+  margin: 0 0 var(--s3);
   resize: none;
   padding: 12px 14px;
   border: 1px solid var(--rule);
   border-radius: 4px;
-  background: var(--paper);
+  background: var(--well);
   color: var(--ink);
   font-family: var(--mono);
   font-size: 12px;
@@ -554,15 +652,15 @@ a:focus-visible {
 /* ---------- chunk strip --------------------------------------------------------------- */
 
 .strip {
-  margin-top: 14px;
+  margin-top: var(--s3);
 }
 
 .chunk {
   position: relative;
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr);
-  gap: 10px;
-  padding: 8px 10px 8px 0;
+  gap: var(--s2);
+  padding: 9px 10px 9px 0;
   border-top: 1px dashed var(--rule-strong);
 }
 
@@ -594,7 +692,7 @@ a:focus-visible {
   font-family: var(--mono);
   font-size: 10px;
   color: var(--faint);
-  margin-top: 4px;
+  margin-top: 5px;
 }
 
 .chunk-tag {
@@ -623,12 +721,12 @@ a:focus-visible {
   font-weight: 400;
   color: var(--faint);
   text-align: left;
-  padding: 0 0 6px;
+  padding: 0 0 var(--s2);
   border-bottom: 1px solid var(--rule);
 }
 
 .hits td {
-  padding: 7px 0;
+  padding: 9px 0;
   border-bottom: 1px solid var(--rule);
   vertical-align: baseline;
 }
@@ -659,7 +757,7 @@ a:focus-visible {
   font-family: var(--mono);
   font-size: 10px;
   color: var(--faint);
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .hits tr.top .score {
@@ -676,20 +774,20 @@ a:focus-visible {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
-  margin: 30px 0 0;
+  margin: var(--s6) 0 0;
   border: 1px solid var(--rule);
   background: var(--rule);
 }
 
 .metric {
   background: var(--paper);
-  padding: 14px 16px 16px;
+  padding: 16px 18px 18px;
 }
 
 .metric b {
   display: block;
   font-family: var(--mono);
-  font-size: 24px;
+  font-size: 25px;
   font-weight: 400;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -701,7 +799,8 @@ a:focus-visible {
   display: block;
   font-size: 11.5px;
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: 3px;
+  line-height: 1.45;
 }
 
 /* ---------- tables -------------------------------------------------------------------- */
@@ -710,15 +809,16 @@ table.grid {
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  margin: 16px 0 10px;
+  margin: var(--s4) 0 0;
 }
 
 table.grid th,
 table.grid td {
   text-align: left;
-  padding: 9px 12px 10px 0;
+  padding: 11px 18px 12px 0;
   border-bottom: 1px solid var(--rule);
   vertical-align: top;
+  line-height: 1.5;
 }
 
 table.grid th {
@@ -726,7 +826,8 @@ table.grid th {
   font-size: 10px;
   font-weight: 400;
   color: var(--faint);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  padding-bottom: var(--s2);
   border-bottom-color: var(--rule-strong);
 }
 
@@ -746,8 +847,8 @@ table.grid td:first-child {
 /* ---------- code ---------------------------------------------------------------------- */
 
 pre {
-  margin: 16px 0;
-  padding: 14px 16px;
+  margin: var(--s4) 0 0;
+  padding: 15px 18px;
   background: var(--surface);
   border: 1px solid var(--rule);
   border-radius: 4px;
@@ -764,8 +865,9 @@ pre code {
 .shell-cmd {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: var(--s2);
+  margin: var(--s4) 0 0;
+  padding: 12px 16px;
   border: 1px solid var(--rule);
   border-radius: 4px;
   background: var(--surface);
@@ -783,11 +885,11 @@ pre code {
 
 .rail {
   position: sticky;
-  top: 72px;
+  top: 76px;
   border: 1px solid var(--rule);
   background: var(--surface);
   border-radius: 4px;
-  max-height: calc(100vh - 96px);
+  max-height: calc(100vh - 100px);
   overflow: auto;
 }
 
@@ -795,12 +897,12 @@ pre code {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: var(--s2);
+  padding: 11px 14px;
   border-bottom: 1px solid var(--rule);
   font-family: var(--mono);
   font-size: 10px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--faint);
   text-transform: uppercase;
 }
@@ -811,14 +913,14 @@ pre code {
 }
 
 .rail-body {
-  padding: 10px 12px 14px;
+  padding: 12px 14px 16px;
 }
 
 .rail-block {
   font-family: var(--mono);
   font-size: 10px;
   color: var(--faint);
-  margin: 12px 0 6px;
+  margin: 16px 0 var(--s1);
   letter-spacing: 0.04em;
 }
 
@@ -829,9 +931,9 @@ pre code {
 .rail-row {
   display: grid;
   grid-template-columns: 16px minmax(0, 1fr) 42px;
-  gap: 8px;
+  gap: var(--s1);
   align-items: baseline;
-  padding: 4px 0;
+  padding: 5px 0;
   border-bottom: 1px dotted var(--rule);
   font-family: var(--mono);
   font-size: 10.5px;
@@ -860,9 +962,9 @@ pre code {
 }
 
 .rail-note {
-  margin: 12px 0 0;
+  margin: 16px 0 0;
   font-size: 10.5px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: var(--faint);
 }
 
@@ -871,24 +973,45 @@ pre code {
 .toc {
   font-family: var(--mono);
   font-size: 11px;
-  line-height: 1.9;
+  line-height: 1.55;
 }
 
 .toc a {
   display: block;
   border: 0;
   color: var(--muted);
+  padding: 4px 0;
 }
 
 .toc a:hover {
   color: var(--accent);
 }
 
+.toc a[aria-current] {
+  color: var(--accent);
+}
+
+.toc .group + .group {
+  margin-top: var(--s3);
+  padding-top: var(--s3);
+  border-top: 1px dotted var(--rule-strong);
+}
+
+.toc .group b {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: var(--s1);
+}
+
 .step {
   display: flex;
-  gap: 14px;
+  gap: var(--s3);
   align-items: baseline;
-  margin: 34px 0 0;
+  margin: 0 0 var(--s3);
 }
 
 .step b {
@@ -909,8 +1032,8 @@ pre code {
   border-left: 2px solid var(--accent);
   border-radius: 0 4px 4px 0;
   background: var(--accent-soft);
-  padding: 10px 14px;
-  margin: 16px 0;
+  padding: 12px 16px;
+  margin: var(--s4) 0;
   font-size: 13.5px;
 }
 
@@ -919,8 +1042,9 @@ pre code {
 }
 
 article.api {
-  padding: 18px 0 4px;
+  padding: var(--s5) 0 6px;
   border-bottom: 1px solid var(--rule);
+  scroll-margin-top: 78px;
 }
 
 article.api:last-child {
@@ -928,10 +1052,11 @@ article.api:last-child {
 }
 
 article.api h3 {
-  margin: 0 0 6px;
+  margin: 0 0 var(--s2);
   font-family: var(--mono);
-  font-size: 13.5px;
+  font-size: 14.5px;
   font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 article.api h3 .kind {
@@ -943,16 +1068,16 @@ article.api h3 .kind {
 }
 
 article.api pre {
-  margin: 8px 0;
+  margin: var(--s3) 0;
   font-size: 11.5px;
 }
 
 .member {
-  margin: 10px 0 0;
+  margin: var(--s3) 0 0;
 }
 
 dl.fields {
-  margin: 8px 0 0;
+  margin: var(--s4) 0 0;
   font-size: 13px;
 }
 
@@ -960,23 +1085,33 @@ dl.fields dt {
   font-family: var(--mono);
   font-size: 11.5px;
   color: var(--accent);
-  margin-top: 6px;
+  margin-top: var(--s3);
+  letter-spacing: 0.02em;
 }
 
+/* Each key and its description are one row, and a dotted seam separates the rows — the same seam
+   the chunk list uses. */
 dl.fields dd {
-  margin: 2px 0 0 0;
+  margin: 3px 0 0 0;
+  padding-bottom: var(--s3);
+  border-bottom: 1px dotted var(--rule);
   color: var(--muted);
+}
+
+dl.fields dd:last-of-type {
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
 footer {
   border-top: 1px solid var(--rule);
-  padding: 26px 0 44px;
+  padding: 30px 0 48px;
   font-family: var(--mono);
   font-size: 11px;
   color: var(--faint);
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 20px;
+  gap: var(--s2) 22px;
 }
 
 footer .spacer {
@@ -988,7 +1123,13 @@ footer .spacer {
 @media (width <= 900px) {
   main {
     grid-template-columns: minmax(0, 1fr);
-    padding-top: 28px;
+    padding-top: var(--s6);
+  }
+  section {
+    padding: var(--s7) 0;
+  }
+  section:first-child {
+    padding-top: 0;
   }
   .rail {
     position: static;
@@ -1005,8 +1146,8 @@ footer .spacer {
 
 @media (width <= 620px) {
   header {
-    gap: 12px;
-    padding: 0 16px;
+    gap: var(--s3);
+    padding: 0 18px;
   }
   header nav {
     gap: 14px;
@@ -1019,11 +1160,17 @@ footer .spacer {
     display: none;
   }
   .shell {
-    padding: 0 16px;
+    padding: 0 18px;
   }
   .control {
     grid-template-columns: 64px minmax(0, 1fr) 48px;
     gap: 8px;
+  }
+  .lead {
+    font-size: 17px;
+  }
+  .figure-body {
+    padding: 16px 14px 14px;
   }
   .metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));

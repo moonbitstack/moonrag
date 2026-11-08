@@ -75,9 +75,10 @@ function railHits(hits) {
   const box = document.querySelector("[data-rail-hits]");
   if (!box) return;
   box.replaceChildren();
-  hits.forEach((hit) => {
+  hits.forEach((hit, i) => {
     const row = el("div", "rail-row");
-    row.append(el("span", "n", hit.i >= 0 ? String(hit.i + 1) : "·"));
+    // Rank, not the passage's place in the corpus: the rail and the table should be read together.
+    row.append(el("span", "n", String(i + 1)));
     row.append(el("span", "t", hit.t.replace(/\s+/g, " ").slice(0, 34)));
     row.append(el("span", "v", hit.score.toFixed(3)));
     box.append(row);
@@ -252,23 +253,48 @@ document.querySelectorAll("[data-retriever]").forEach((figure) => {
 
 // ---------- the rail follows the reader ----------------------------------------------------
 
-const sections = document.querySelectorAll("[data-label]");
+const sections = [...document.querySelectorAll("[data-label], section[id$='-top']")];
 const marker = document.querySelector("[data-rail-section]");
+const toc = document.querySelectorAll(".toc a[href^='#']");
+
+// Which section is being read: the last one whose top has gone under the header. Picking the
+// topmost section that merely intersects would name the chapter the reader has just left, because
+// its tail still shows at the top of the screen.
+function reading() {
+  // At the end of the page the last section cannot reach the header, so it is the one being read.
+  if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) {
+    return sections[sections.length - 1];
+  }
+  let current = sections[0];
+  for (const section of sections) {
+    if (section.getBoundingClientRect().top <= 80) current = section;
+  }
+  return current;
+}
+
 if (sections.length && marker && "IntersectionObserver" in window) {
-  const seen = new Map();
+  let queued = 0;
+  const update = () => {
+    queued = 0;
+    const section = reading();
+    // The home page labels its sections; the API reference names them in the heading.
+    const label = section.dataset.label || (section.querySelector("h2")?.textContent || "").trim();
+    if (label) marker.textContent = label;
+    // A contents list marks where the reader is, if its links point at these sections.
+    const at = section.id ? "#" + section.id : "";
+    toc.forEach((link) => {
+      if (at && link.getAttribute("href") === at) link.setAttribute("aria-current", "true");
+      else link.removeAttribute("aria-current");
+    });
+  };
   const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => seen.set(entry.target, entry));
-      let best = null;
-      seen.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        if (!best || entry.boundingClientRect.top < best.boundingClientRect.top) best = entry;
-      });
-      if (best) marker.textContent = best.target.dataset.label;
+    () => {
+      if (!queued) queued = requestAnimationFrame(update);
     },
-    { rootMargin: "-72px 0px -55% 0px", threshold: [0, 1] },
+    { rootMargin: "-72px 0px -50% 0px", threshold: [0, 1] },
   );
   sections.forEach((section) => observer.observe(section));
+  update();
 }
 
 // ---------- copy the install line -----------------------------------------------------------
