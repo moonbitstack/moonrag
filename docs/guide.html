@@ -63,7 +63,7 @@
           </section>
 
           <section id="install" data-label="install">
-            <div class="step"><b>01</b><h3>Add the package</h3></div>
+            <div class="step"><b>01</b><h2>Add the package</h2></div>
             <div class="shell-cmd">moon add moonbitstack/moonrag</div>
             <pre><code>import {
   "moonbitstack/moonrag",           // documents, contracts, memory store, retrieval
@@ -79,7 +79,7 @@
           </section>
 
           <section id="pipeline" data-label="pipeline">
-            <div class="step"><b>02</b><h3>The first pipeline</h3></div>
+            <div class="step"><b>02</b><h2>The first pipeline</h2></div>
             <p>
               Load a CSV, split it, index it, and ask a question. The indexer is what makes the second
               run cheap; it is covered in step five.
@@ -132,7 +132,7 @@ second pass: added=0 skipped=3</code></pre>
           </section>
 
           <section id="splitter" data-label="splitter">
-            <div class="step"><b>03</b><h3>Choose the splitter</h3></div>
+            <div class="step"><b>03</b><h2>Choose the splitter</h2></div>
             <p>
               Chunking decides what the library can find. Four rules, one per splitter: paragraphs
               with an overlap, a token budget you supply, headings with a path, or headings in HTML.
@@ -160,7 +160,7 @@ assert_eq(chunks[1].str_meta("h2"), Some("Search"))</code></pre>
           </section>
 
           <section id="store" data-label="store">
-            <div class="step"><b>04</b><h3>Put the vectors somewhere</h3></div>
+            <div class="step"><b>04</b><h2>Put the vectors somewhere</h2></div>
             <p>
               <code>InMemoryVectorStore</code> is the reference implementation: documents in insertion
               order, every candidate scored on every search, filters applied before ranking. When the
@@ -191,7 +191,7 @@ assert_eq(chunks[1].str_meta("h2"), Some("Search"))</code></pre>
           </section>
 
           <section id="index" data-label="index">
-            <div class="step"><b>05</b><h3>Re-index without re-embedding</h3></div>
+            <div class="step"><b>05</b><h2>Re-index without re-embedding</h2></div>
             <p>
               Embedding is the expensive part, so a second run over an unchanged corpus must embed
               nothing. The indexer keeps a content hash per stored id:
@@ -218,7 +218,7 @@ let cleaned = indexer.index(chunks, cleanup=@index.Cleanup::Full)</code></pre>
           </section>
 
           <section id="errors" data-label="errors">
-            <div class="step"><b>06</b><h3>When it goes wrong</h3></div>
+            <div class="step"><b>06</b><h2>When it goes wrong</h2></div>
             <table class="grid">
               <thead>
                 <tr>
