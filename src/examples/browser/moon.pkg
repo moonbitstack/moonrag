@@ -1,0 +1,26 @@
+// The page's glue: the library compiled to JavaScript, with a handful of functions the site calls.
+// Not part of the published API — this package exists so the demo runs this code and not a copy of it.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitstack/moonrag/split",
+  "moonbitlang/core/json",
+}
+
+pkgtype(kind: "executable")
+
+supported_targets = "js"
+
+options(
+  link: {
+    "js": {
+      "exports": [
+        "browser_split",
+        "browser_rank",
+        "browser_mmr",
+        "browser_corpus",
+      ],
+      "format": "esm",
+    },
+  },
+)
