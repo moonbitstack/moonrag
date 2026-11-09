@@ -1,6 +1,6 @@
 name = "moonbitstack/moonrag"
 
-version = "0.1.0"
+version = "0.1.1"
 
 readme = "README.md"
 
@@ -59,9 +59,9 @@ source = "src"
 
 import {
   "moonbitlang/async@0.22.5",
-  "moonbitstack/moondb@0.2.7",
-  "moonbitstack/moonmd@0.1.0",
-  "moonbitstack/moonxml@0.1.4",
-  "moonbitstack/mooncrypt@0.4.12",
-  "moonbitstack/moonbase@0.4.3",
+  "moonbitstack/moondb@0.2.8",
+  "moonbitstack/moonmd@0.1.1",
+  "moonbitstack/moonxml@0.1.6",
+  "moonbitstack/mooncrypt@0.4.13",
+  "moonbitstack/moonbase@0.4.4",
 }
