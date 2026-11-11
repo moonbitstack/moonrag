@@ -1,8 +1,8 @@
-// Qdrant over a server the tests do not start: `MOONRAG_LIVE` says one is there.
+// Weaviate over a server the tests do not start: `MOONRAG_LIVE` says one is there.
 
 import {
   "moonbitstack/moonrag",
-  "moonbitstack/moonrag/qdrant" @qstore,
+  "moonbitstack/moonrag/moonweavte" @wstore,
   "moonbitstack/moonrag-integration/standard",
   "moonbitlang/async",
   "moonbitlang/core/env",

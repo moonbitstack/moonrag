@@ -166,5 +166,5 @@ jobs:
           for i in $(seq 1 120); do
             curl -sf http://127.0.0.1:6333/ >/dev/null && curl -sf http://127.0.0.1:8000/api/v2/heartbeat >/dev/null && curl -sf http://127.0.0.1:8080/v1/.well-known/ready >/dev/null && curl -sf http://127.0.0.1:9091/healthz >/dev/null && break || sleep 1
           done
-          moon test --target native -p moonbitstack/moonrag-integration/sqlite -p moonbitstack/moonrag-integration/pgvector -p moonbitstack/moonrag-integration/ms9vc -p moonbitstack/moonrag-integration/qdrant -p moonbitstack/moonrag-integration/chroma -p moonbitstack/moonrag-integration/weaviate -p moonbitstack/moonrag-integration/milvus
+          moon test --target native -p moonbitstack/moonrag-integration/sqlite -p moonbitstack/moonrag-integration/pgvector -p moonbitstack/moonrag-integration/moonms9vc -p moonbitstack/moonrag-integration/moonqdrant -p moonbitstack/moonrag-integration/moonchroma -p moonbitstack/moonrag-integration/moonweavte -p moonbitstack/moonrag-integration/moonmilvus
 

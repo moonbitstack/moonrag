@@ -161,7 +161,7 @@ MySQL's driver is asynchronous, like PostgreSQL's:
 let driver = @client.MysqlConn::connect("127.0.0.1", 3306, "root", "ragpass", "moonrag")
 ```
 
-Qdrant is a backend of its own, `moonbitstack/moonrag/qdrant`, native only because it opens sockets.
+Qdrant is a backend of its own, `moonbitstack/moonrag/moonqdrant`, native only because it opens sockets.
 It keeps each document as a point in a collection; its string id is folded into a number Qdrant
 accepts and rides back inside the payload. Like SQLite and MySQL, the cosine is recomputed in this
 process from the vector the store reads back, and the filter is the same `Filter::matches` — so
@@ -169,34 +169,34 @@ every backend ranks the same way rather than each trusting its server. CI starts
 
 <!-- nocheck -->
 ```moonbit
-let store = @qdrant.QdrantStore::new("http://127.0.0.1:6333", embedder, dimension=256)
+let store = @moonqdrant.QdrantStore::new("http://127.0.0.1:6333", embedder, dimension=256)
 ```
 
-Chroma is a backend too, `moonbitstack/moonrag/chroma`, against its v2 REST API. It keeps the document
+Chroma is a backend too, `moonbitstack/moonrag/moonchroma`, against its v2 REST API. It keeps the document
 ids Chroma's own strings, so nothing is folded; `create` remembers the collection UUID Chroma assigns,
 `upsert` replaces by id, and search reads every embedding back and ranks here, as the others do.
 
 <!-- nocheck -->
 ```moonbit
-let store = @chroma.ChromaStore::new("http://127.0.0.1:8000", embedder, dimension=256)
+let store = @moonchroma.ChromaStore::new("http://127.0.0.1:8000", embedder, dimension=256)
 ```
 
-Weaviate rounds out the set, `moonbitstack/moonrag/weaviate`. Its objects must be UUIDs, so a document's
+Weaviate rounds out the set, `moonbitstack/moonrag/moonweavte`. Its objects must be UUIDs, so a document's
 id is folded into one deterministically and kept in a `docid` property; upsert is a delete then a create
 by that UUID, and search reads every vector back and ranks here.
 
 <!-- nocheck -->
 ```moonbit
-let store = @weaviate.WeaviateStore::new("http://127.0.0.1:8080", embedder, dimension=256)
+let store = @moonweavte.WeaviateStore::new("http://127.0.0.1:8080", embedder, dimension=256)
 ```
 
-Milvus, `moonbitstack/moonrag/milvus`, is the last: `@milvus.MilvusStore::new(url, embedder, dimension=256)`
+Milvus, `moonbitstack/moonrag/moonmilvus`, is the last: `@moonmilvus.MilvusStore::new(url, embedder, dimension=256)`
 over its v2 REST API. Milvus is eventually consistent, so `add` and `delete` wait until the change is
 visible and every query asks for `Strong`, which keeps the standard cases deterministic.
 
 <!-- nocheck -->
 ```moonbit
-let store = @milvus.MilvusStore::new("http://127.0.0.1:19530", embedder, dimension=256)
+let store = @moonmilvus.MilvusStore::new("http://127.0.0.1:19530", embedder, dimension=256)
 ```
 
 ## Retrieving

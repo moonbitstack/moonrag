@@ -1,8 +1,8 @@
-// Weaviate over a server the tests do not start: `MOONRAG_LIVE` says one is there.
+// Chroma over a server the tests do not start: `MOONRAG_LIVE` says one is there.
 
 import {
   "moonbitstack/moonrag",
-  "moonbitstack/moonrag/weaviate" @wstore,
+  "moonbitstack/moonrag/moonchroma" @cstore,
   "moonbitstack/moonrag-integration/standard",
   "moonbitlang/async",
   "moonbitlang/core/env",

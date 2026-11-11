@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "moonbitstack/moonrag/weaviate"
+package "moonbitstack/moonrag/moonweavte"
 
 import {
   "moonbitstack/moonrag",

@@ -1,8 +1,8 @@
-// Milvus over a server the tests do not start: `MOONRAG_LIVE` says one is there.
+// Qdrant over a server the tests do not start: `MOONRAG_LIVE` says one is there.
 
 import {
   "moonbitstack/moonrag",
-  "moonbitstack/moonrag/milvus" @mstore,
+  "moonbitstack/moonrag/moonqdrant" @qstore,
   "moonbitstack/moonrag-integration/standard",
   "moonbitlang/async",
   "moonbitlang/core/env",

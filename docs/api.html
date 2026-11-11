@@ -423,8 +423,8 @@
 <div class="member" id="sql-sqlvectorstore-search"><pre class="sig scroll"><code>pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::search(Self[T], ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
 </article>
 </section>
-<section id="qdrant-top"><h2>qdrant</h2><p>A VectorStore held in a Qdrant collection over its REST API. Native only: it opens sockets.</p>
-<article class="api" id="qdrant-qdrantstore"><h3><span class="kind">struct</span>QdrantStore</h3>
+<section id="moonqdrant-top"><h2>moonqdrant</h2><p>A VectorStore held in a Qdrant collection over its REST API. Native only: it opens sockets.</p>
+<article class="api" id="moonqdrant-qdrantstore"><h3><span class="kind">struct</span>QdrantStore</h3>
 
 <pre class="sig scroll"><code>pub struct QdrantStore {
   base : String
@@ -433,17 +433,17 @@
   dimension : Int32
   mut counter : Int32
 }</code></pre>
-<div class="member" id="qdrant-qdrantstore-add"><pre class="sig scroll"><code>pub async fn QdrantStore::add(Self, Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
-<div class="member" id="qdrant-qdrantstore-clear"><pre class="sig scroll"><code>pub async fn QdrantStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored point by recreating the collection empty.</p></div>
-<div class="member" id="qdrant-qdrantstore-create"><pre class="sig scroll"><code>pub async fn QdrantStore::create(Self) -&gt; Unit</code></pre><p>Create the collection this store needs. Safe to call on every start: an existing collection of the same shape is left as it is.</p></div>
-<div class="member" id="qdrant-qdrantstore-delete"><pre class="sig scroll"><code>pub async fn QdrantStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
-<div class="member" id="qdrant-qdrantstore-len"><pre class="sig scroll"><code>pub async fn QdrantStore::len(Self) -&gt; Int64</code></pre><p>The number of stored points.</p></div>
-<div class="member" id="qdrant-qdrantstore-new"><pre class="sig scroll"><code>pub fn QdrantStore::new(String, &amp;@moonrag.Embedder, dimension~ : Int32, collection? : String) -&gt; Self raise</code></pre><p>A store over the Qdrant server at <code>base</code> (for example <code>http://127.0.0.1:6333</code>).</p></div>
-<div class="member" id="qdrant-qdrantstore-search"><pre class="sig scroll"><code>pub async fn QdrantStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
+<div class="member" id="moonqdrant-qdrantstore-add"><pre class="sig scroll"><code>pub async fn QdrantStore::add(Self, Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
+<div class="member" id="moonqdrant-qdrantstore-clear"><pre class="sig scroll"><code>pub async fn QdrantStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored point by recreating the collection empty.</p></div>
+<div class="member" id="moonqdrant-qdrantstore-create"><pre class="sig scroll"><code>pub async fn QdrantStore::create(Self) -&gt; Unit</code></pre><p>Create the collection this store needs. Safe to call on every start: an existing collection of the same shape is left as it is.</p></div>
+<div class="member" id="moonqdrant-qdrantstore-delete"><pre class="sig scroll"><code>pub async fn QdrantStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
+<div class="member" id="moonqdrant-qdrantstore-len"><pre class="sig scroll"><code>pub async fn QdrantStore::len(Self) -&gt; Int64</code></pre><p>The number of stored points.</p></div>
+<div class="member" id="moonqdrant-qdrantstore-new"><pre class="sig scroll"><code>pub fn QdrantStore::new(String, &amp;@moonrag.Embedder, dimension~ : Int32, collection? : String) -&gt; Self raise</code></pre><p>A store over the Qdrant server at <code>base</code> (for example <code>http://127.0.0.1:6333</code>).</p></div>
+<div class="member" id="moonqdrant-qdrantstore-search"><pre class="sig scroll"><code>pub async fn QdrantStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
 </article>
 </section>
-<section id="chroma-top"><h2>chroma</h2><p>A VectorStore held in a Chroma collection over its v2 REST API. Native only: it opens sockets.</p>
-<article class="api" id="chroma-chromastore"><h3><span class="kind">struct</span>ChromaStore</h3>
+<section id="moonchroma-top"><h2>moonchroma</h2><p>A VectorStore held in a Chroma collection over its v2 REST API. Native only: it opens sockets.</p>
+<article class="api" id="moonchroma-chromastore"><h3><span class="kind">struct</span>ChromaStore</h3>
 
 <pre class="sig scroll"><code>pub struct ChromaStore {
   base : String
@@ -455,17 +455,17 @@
   mut id : String
   mut counter : Int32
 }</code></pre>
-<div class="member" id="chroma-chromastore-add"><pre class="sig scroll"><code>pub async fn ChromaStore::add(Self, Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
-<div class="member" id="chroma-chromastore-clear"><pre class="sig scroll"><code>pub async fn ChromaStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored document, leaving the collection.</p></div>
-<div class="member" id="chroma-chromastore-create"><pre class="sig scroll"><code>pub async fn ChromaStore::create(Self) -&gt; Unit</code></pre><p>Create the collection (or reuse one of the same name) and remember the id Chroma assigns it.</p></div>
-<div class="member" id="chroma-chromastore-delete"><pre class="sig scroll"><code>pub async fn ChromaStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
-<div class="member" id="chroma-chromastore-len"><pre class="sig scroll"><code>pub async fn ChromaStore::len(Self) -&gt; Int64</code></pre><p>The number of stored documents.</p></div>
-<div class="member" id="chroma-chromastore-new"><pre class="sig scroll"><code>pub fn ChromaStore::new(String, &amp;@moonrag.Embedder, dimension~ : Int32, collection? : String, tenant? : String, database? : String) -&gt; Self raise</code></pre><p>A store over the Chroma server at <code>base</code> (for example <code>http://127.0.0.1:8000</code>), in the default tenant and database unless named.</p></div>
-<div class="member" id="chroma-chromastore-search"><pre class="sig scroll"><code>pub async fn ChromaStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
+<div class="member" id="moonchroma-chromastore-add"><pre class="sig scroll"><code>pub async fn ChromaStore::add(Self, Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
+<div class="member" id="moonchroma-chromastore-clear"><pre class="sig scroll"><code>pub async fn ChromaStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored document, leaving the collection.</p></div>
+<div class="member" id="moonchroma-chromastore-create"><pre class="sig scroll"><code>pub async fn ChromaStore::create(Self) -&gt; Unit</code></pre><p>Create the collection (or reuse one of the same name) and remember the id Chroma assigns it.</p></div>
+<div class="member" id="moonchroma-chromastore-delete"><pre class="sig scroll"><code>pub async fn ChromaStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
+<div class="member" id="moonchroma-chromastore-len"><pre class="sig scroll"><code>pub async fn ChromaStore::len(Self) -&gt; Int64</code></pre><p>The number of stored documents.</p></div>
+<div class="member" id="moonchroma-chromastore-new"><pre class="sig scroll"><code>pub fn ChromaStore::new(String, &amp;@moonrag.Embedder, dimension~ : Int32, collection? : String, tenant? : String, database? : String) -&gt; Self raise</code></pre><p>A store over the Chroma server at <code>base</code> (for example <code>http://127.0.0.1:8000</code>), in the default tenant and database unless named.</p></div>
+<div class="member" id="moonchroma-chromastore-search"><pre class="sig scroll"><code>pub async fn ChromaStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
 </article>
 </section>
-<section id="weaviate-top"><h2>weaviate</h2><p>A VectorStore held in a Weaviate class over its REST API. Native only: it opens sockets.</p>
-<article class="api" id="weaviate-weaviatestore"><h3><span class="kind">struct</span>WeaviateStore</h3>
+<section id="moonweavte-top"><h2>moonweavte</h2><p>A VectorStore held in a Weaviate class over its REST API. Native only: it opens sockets.</p>
+<article class="api" id="moonweavte-weaviatestore"><h3><span class="kind">struct</span>WeaviateStore</h3>
 
 <pre class="sig scroll"><code>pub struct WeaviateStore {
   base : String
@@ -474,17 +474,17 @@
   dimension : Int32
   mut counter : Int32
 }</code></pre>
-<div class="member" id="weaviate-weaviatestore-add"><pre class="sig scroll"><code>pub async fn WeaviateStore::add(Self, Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
-<div class="member" id="weaviate-weaviatestore-clear"><pre class="sig scroll"><code>pub async fn WeaviateStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored object, leaving the class.</p></div>
-<div class="member" id="weaviate-weaviatestore-create"><pre class="sig scroll"><code>pub async fn WeaviateStore::create(Self) -&gt; Unit</code></pre><p>Create the class this store needs. Safe on every start: an existing class answers 422, which is not an error here.</p></div>
-<div class="member" id="weaviate-weaviatestore-delete"><pre class="sig scroll"><code>pub async fn WeaviateStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
-<div class="member" id="weaviate-weaviatestore-len"><pre class="sig scroll"><code>pub async fn WeaviateStore::len(Self) -&gt; Int64</code></pre><p>The number of stored objects.</p></div>
-<div class="member" id="weaviate-weaviatestore-new"><pre class="sig scroll"><code>pub fn WeaviateStore::new(String, &amp;@moonrag.Embedder, dimension~ : Int32, class_name? : String) -&gt; Self raise</code></pre><p>A store over the Weaviate server at <code>base</code> (for example <code>http://127.0.0.1:8080</code>), in class <code>class_name</code>.</p></div>
-<div class="member" id="weaviate-weaviatestore-search"><pre class="sig scroll"><code>pub async fn WeaviateStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
+<div class="member" id="moonweavte-weaviatestore-add"><pre class="sig scroll"><code>pub async fn WeaviateStore::add(Self, Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
+<div class="member" id="moonweavte-weaviatestore-clear"><pre class="sig scroll"><code>pub async fn WeaviateStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored object, leaving the class.</p></div>
+<div class="member" id="moonweavte-weaviatestore-create"><pre class="sig scroll"><code>pub async fn WeaviateStore::create(Self) -&gt; Unit</code></pre><p>Create the class this store needs. Safe on every start: an existing class answers 422, which is not an error here.</p></div>
+<div class="member" id="moonweavte-weaviatestore-delete"><pre class="sig scroll"><code>pub async fn WeaviateStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
+<div class="member" id="moonweavte-weaviatestore-len"><pre class="sig scroll"><code>pub async fn WeaviateStore::len(Self) -&gt; Int64</code></pre><p>The number of stored objects.</p></div>
+<div class="member" id="moonweavte-weaviatestore-new"><pre class="sig scroll"><code>pub fn WeaviateStore::new(String, &amp;@moonrag.Embedder, dimension~ : Int32, class_name? : String) -&gt; Self raise</code></pre><p>A store over the Weaviate server at <code>base</code> (for example <code>http://127.0.0.1:8080</code>), in class <code>class_name</code>.</p></div>
+<div class="member" id="moonweavte-weaviatestore-search"><pre class="sig scroll"><code>pub async fn WeaviateStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
 </article>
 </section>
-<section id="milvus-top"><h2>milvus</h2><p>A VectorStore held in a Milvus collection over its v2 REST API. Native only: it opens sockets.</p>
-<article class="api" id="milvus-milvusstore"><h3><span class="kind">struct</span>MilvusStore</h3>
+<section id="moonmilvus-top"><h2>moonmilvus</h2><p>A VectorStore held in a Milvus collection over its v2 REST API. Native only: it opens sockets.</p>
+<article class="api" id="moonmilvus-milvusstore"><h3><span class="kind">struct</span>MilvusStore</h3>
 
 <pre class="sig scroll"><code>pub struct MilvusStore {
   base : String
@@ -493,13 +493,13 @@
   dimension : Int32
   mut counter : Int32
 }</code></pre>
-<div class="member" id="milvus-milvusstore-add"><pre class="sig scroll"><code>pub async fn MilvusStore::add(Self, Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
-<div class="member" id="milvus-milvusstore-clear"><pre class="sig scroll"><code>pub async fn MilvusStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored row, leaving the collection.</p></div>
-<div class="member" id="milvus-milvusstore-create"><pre class="sig scroll"><code>pub async fn MilvusStore::create(Self) -&gt; Unit</code></pre><p>Create the collection (tolerating one that already exists) and load it for querying.</p></div>
-<div class="member" id="milvus-milvusstore-delete"><pre class="sig scroll"><code>pub async fn MilvusStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
-<div class="member" id="milvus-milvusstore-len"><pre class="sig scroll"><code>pub async fn MilvusStore::len(Self) -&gt; Int64</code></pre><p>The number of stored rows.</p></div>
-<div class="member" id="milvus-milvusstore-new"><pre class="sig scroll"><code>pub fn MilvusStore::new(String, &amp;@moonrag.Embedder, dimension~ : Int32, collection? : String) -&gt; Self raise</code></pre><p>A store over the Milvus server at <code>base</code> (for example <code>http://127.0.0.1:19530</code>).</p></div>
-<div class="member" id="milvus-milvusstore-search"><pre class="sig scroll"><code>pub async fn MilvusStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
+<div class="member" id="moonmilvus-milvusstore-add"><pre class="sig scroll"><code>pub async fn MilvusStore::add(Self, Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
+<div class="member" id="moonmilvus-milvusstore-clear"><pre class="sig scroll"><code>pub async fn MilvusStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored row, leaving the collection.</p></div>
+<div class="member" id="moonmilvus-milvusstore-create"><pre class="sig scroll"><code>pub async fn MilvusStore::create(Self) -&gt; Unit</code></pre><p>Create the collection (tolerating one that already exists) and load it for querying.</p></div>
+<div class="member" id="moonmilvus-milvusstore-delete"><pre class="sig scroll"><code>pub async fn MilvusStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
+<div class="member" id="moonmilvus-milvusstore-len"><pre class="sig scroll"><code>pub async fn MilvusStore::len(Self) -&gt; Int64</code></pre><p>The number of stored rows.</p></div>
+<div class="member" id="moonmilvus-milvusstore-new"><pre class="sig scroll"><code>pub fn MilvusStore::new(String, &amp;@moonrag.Embedder, dimension~ : Int32, collection? : String) -&gt; Self raise</code></pre><p>A store over the Milvus server at <code>base</code> (for example <code>http://127.0.0.1:19530</code>).</p></div>
+<div class="member" id="moonmilvus-milvusstore-search"><pre class="sig scroll"><code>pub async fn MilvusStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
 </article>
 </section>
         </div>
@@ -557,17 +557,17 @@
 <a href="#sql-blockingdriver">BlockingDriver</a>
 <a href="#sql-sqlvectorstore">SqlVectorStore</a>
 </div>
-<div class="group"><b>qdrant</b>
-<a href="#qdrant-qdrantstore">QdrantStore</a>
+<div class="group"><b>moonqdrant</b>
+<a href="#moonqdrant-qdrantstore">QdrantStore</a>
 </div>
-<div class="group"><b>chroma</b>
-<a href="#chroma-chromastore">ChromaStore</a>
+<div class="group"><b>moonchroma</b>
+<a href="#moonchroma-chromastore">ChromaStore</a>
 </div>
-<div class="group"><b>weaviate</b>
-<a href="#weaviate-weaviatestore">WeaviateStore</a>
+<div class="group"><b>moonweavte</b>
+<a href="#moonweavte-weaviatestore">WeaviateStore</a>
 </div>
-<div class="group"><b>milvus</b>
-<a href="#milvus-milvusstore">MilvusStore</a>
+<div class="group"><b>moonmilvus</b>
+<a href="#moonmilvus-milvusstore">MilvusStore</a>
 </div>
             </div>
             <p class="rail-note">

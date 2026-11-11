@@ -133,17 +133,17 @@ back and the distance is computed in this process with the same filter tree the 
 MySQL 9 keeps the vectors in its native `VECTOR(n)` column (`STRING_TO_VECTOR` writes, `VECTOR_TO_STRING`
 reads); its Community build has no `DISTANCE`, so the cosine score is computed here, not in the server.
 
-Qdrant is a backend of its own, `moonbitstack/moonrag/qdrant`, native only because it opens sockets:
-`@qdrant.QdrantStore::new(url, embedder, dimension=256)` over its REST API. Like SQLite and MySQL it
+Qdrant is a backend of its own, `moonbitstack/moonrag/moonqdrant`, native only because it opens sockets:
+`@moonqdrant.QdrantStore::new(url, embedder, dimension=256)` over its REST API. Like SQLite and MySQL it
 recomputes the cosine here from the vector it reads back, so every backend ranks the same way.
 
-Chroma is another, `moonbitstack/moonrag/chroma`, against its v2 REST API: `@chroma.ChromaStore::new(url,
+Chroma is another, `moonbitstack/moonrag/moonchroma`, against its v2 REST API: `@moonchroma.ChromaStore::new(url,
 embedder, dimension=256)`. Its document ids are Chroma's strings; `create` remembers the collection UUID.
 
-Weaviate, `moonbitstack/moonrag/weaviate`, needs UUID object ids: `@weaviate.WeaviateStore::new(url,
+Weaviate, `moonbitstack/moonrag/moonweavte`, needs UUID object ids: `@moonweavte.WeaviateStore::new(url,
 embedder, dimension=256, class_name="MoonragDocument")` folds each document id into one and upserts by it.
 
-Milvus, `moonbitstack/moonrag/milvus`, is eventually consistent: `@milvus.MilvusStore::new(url, embedder,
+Milvus, `moonbitstack/moonrag/moonmilvus`, is eventually consistent: `@moonmilvus.MilvusStore::new(url, embedder,
 dimension=256)` waits for each add and delete to become queryable, so callers see deterministic results.
 
 ## Bring your own model

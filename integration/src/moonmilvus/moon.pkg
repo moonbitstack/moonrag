@@ -1,8 +1,8 @@
-// Chroma over a server the tests do not start: `MOONRAG_LIVE` says one is there.
+// Milvus over a server the tests do not start: `MOONRAG_LIVE` says one is there.
 
 import {
   "moonbitstack/moonrag",
-  "moonbitstack/moonrag/chroma" @cstore,
+  "moonbitstack/moonrag/moonmilvus" @mstore,
   "moonbitstack/moonrag-integration/standard",
   "moonbitlang/async",
   "moonbitlang/core/env",
