@@ -1,19 +1,52 @@
 name: Release
 
-# A version tag publishes this module to mooncakes under the moonbitstack account. Publishing is
+# A version tag publishes one module to mooncakes under the moonbitstack account. Publishing is
 # opt-in: the publish job runs only while the organization (or repository) variable
 # MOONCAKES_PUBLISH is 'true', so a tag with the switch off only runs the tests.
+#
+# moonrag holds five modules; the tag prefix names the one to publish (moonrag-v*,
+# moonqdrant-v*, moonchroma-v*, moonweavte-v*, moonmilvus-v*).
 on:
   push:
-    tags: ["v*"]
+    tags: ["moonrag-v*", "moonqdrant-v*", "moonchroma-v*", "moonweavte-v*", "moonmilvus-v*"]
   workflow_dispatch:
+    inputs:
+      module:
+        description: module to publish
+        required: true
+        type: choice
+        options: [moonrag, moonqdrant, moonchroma, moonweavte, moonmilvus]
 
 permissions:
   contents: read
 
 jobs:
-  test:
+  resolve:
     runs-on: ubuntu-26.04
+    outputs:
+      dir: ${{ steps.pick.outputs.dir }}
+    steps:
+      - id: pick
+        env:
+          MODULE: ${{ inputs.module }}
+        run: |
+          name="${MODULE:-${GITHUB_REF_NAME%-v*}}"
+          case "$name" in
+            moonrag) dir=. ;;
+            moonqdrant) dir=drivers/qdrant ;;
+            moonchroma) dir=drivers/chroma ;;
+            moonweavte) dir=drivers/weavte ;;
+            moonmilvus) dir=drivers/milvus ;;
+            *) echo "::error::unknown module $name"; exit 1 ;;
+          esac
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: resolve
+    runs-on: ubuntu-26.04
+    defaults:
+      run:
+        working-directory: ${{ needs.resolve.outputs.dir }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -27,14 +60,17 @@ jobs:
       - name: test
         run: |
           moon update
-          moon check --target all
+          moon check --target all --deny-warn
           moon test --target all
 
   publish:
-    needs: test
+    needs: [resolve, test]
     if: vars.MOONCAKES_PUBLISH == 'true'
     runs-on: ubuntu-26.04
     environment: mooncakes
+    defaults:
+      run:
+        working-directory: ${{ needs.resolve.outputs.dir }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -53,6 +89,9 @@ jobs:
             echo "::error::tag $GITHUB_REF_NAME does not match moon.mod version $version"; exit 1
           fi
 
+      # A driver publishes from a copy outside the workspace. Inside it, the root `.moonignore`
+      # that keeps drivers/ out of moonrag's package also empties the driver's; outside it, the
+      # check before publishing resolves moonrag from mooncakes, as the driver's users will.
       - name: publish
         env:
           CREDENTIALS: ${{ secrets.MOONCAKES_CREDENTIALS }}
@@ -60,6 +99,10 @@ jobs:
           if [ -z "$CREDENTIALS" ]; then echo "::error::MOONCAKES_CREDENTIALS is not available"; exit 1; fi
           trap 'rm -f ~/.moon/credentials.json' EXIT
           printf '%s' "$CREDENTIALS" > ~/.moon/credentials.json
+          if [ "$PWD" != "$GITHUB_WORKSPACE" ]; then
+            cp -r . "$RUNNER_TEMP/module"
+            cd "$RUNNER_TEMP/module"
+          fi
           moon update
           moon publish
 
@@ -78,10 +121,14 @@ jobs:
             -d '{"event_type":"released"}'
 
   # Its own job: the module is already out by now, so rerunning a failure here must not publish it again.
+  # Each module carries its own skill under its own directory, at its own version.
   skills:
-    needs: publish
+    needs: [resolve, publish]
     runs-on: ubuntu-26.04
     environment: mooncakes
+    defaults:
+      run:
+        working-directory: ${{ needs.resolve.outputs.dir }}
     steps:
       - uses: actions/checkout@v7
         with:
