@@ -1,0 +1,16 @@
+// The Milvus backend: a `VectorStore` over Milvus's v2 REST API, native only (it opens sockets).
+//
+// Milvus is eventually consistent: a row upserted now is not queryable the same instant, and a delete
+// shows up a moment later. So `add` and `delete` wait until the change is visible before returning,
+// and every query asks for `Strong` consistency — the standard cases are deterministic without the
+// caller knowing. Like SQLite and MySQL, the cosine is recomputed here from the vectors Milvus returns.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitlang/async",
+  "moonbitlang/async/http",
+  "moonbitlang/async/io",
+  "moonbitlang/core/json",
+}
+
+supported_targets = "native"

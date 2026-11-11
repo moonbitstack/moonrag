@@ -190,6 +190,15 @@ by that UUID, and search reads every vector back and ranks here.
 let store = @weaviate.WeaviateStore::new("http://127.0.0.1:8080", embedder, dimension=256)
 ```
 
+Milvus, `moonbitstack/moonrag/milvus`, is the last: `@milvus.MilvusStore::new(url, embedder, dimension=256)`
+over its v2 REST API. Milvus is eventually consistent, so `add` and `delete` wait until the change is
+visible and every query asks for `Strong`, which keeps the standard cases deterministic.
+
+<!-- nocheck -->
+```moonbit
+let store = @milvus.MilvusStore::new("http://127.0.0.1:19530", embedder, dimension=256)
+```
+
 ## Retrieving
 
 `SimilarityRetriever` embeds the query and ranks by cosine similarity.

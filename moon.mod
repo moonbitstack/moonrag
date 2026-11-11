@@ -48,6 +48,7 @@ keywords = [
   "qdrant",
   "chroma",
   "weaviate",
+  "milvus",
   "vector-type",
   "postgresql",
   "hnsw",

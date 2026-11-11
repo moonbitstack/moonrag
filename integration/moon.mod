@@ -20,6 +20,7 @@ keywords = [
   "qdrant",
   "chroma",
   "weaviate",
+  "milvus",
   "integration",
   "moonbit",
 ]

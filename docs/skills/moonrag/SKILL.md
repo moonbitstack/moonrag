@@ -143,6 +143,9 @@ embedder, dimension=256)`. Its document ids are Chroma's strings; `create` remem
 Weaviate, `moonbitstack/moonrag/weaviate`, needs UUID object ids: `@weaviate.WeaviateStore::new(url,
 embedder, dimension=256, class_name="MoonragDocument")` folds each document id into one and upserts by it.
 
+Milvus, `moonbitstack/moonrag/milvus`, is eventually consistent: `@milvus.MilvusStore::new(url, embedder,
+dimension=256)` waits for each add and delete to become queryable, so callers see deterministic results.
+
 ## Bring your own model
 
 ```moonbit

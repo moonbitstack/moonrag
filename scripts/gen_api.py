@@ -64,6 +64,11 @@ PACKAGES = [
         "src/weaviate",
         "A VectorStore held in a Weaviate class over its REST API. Native only: it opens sockets.",
     ),
+    (
+        "moonbitstack/moonrag/milvus",
+        "src/milvus",
+        "A VectorStore held in a Milvus collection over its v2 REST API. Native only: it opens sockets.",
+    ),
 ]
 
 DECL = re.compile(

@@ -138,7 +138,13 @@ jobs:
           moon version --all
           moon update
 
-      - name: the vector-store standard cases run on SQLite, PostgreSQL with pgvector, and MySQL 9
+      - name: start milvus
+        run: |
+          docker run -d --name milvus -p 19530:19530 -p 9091:9091 \
+            -e ETCD_USE_EMBED=true -e ETCD_DATA_DIR=/var/lib/milvus/etcd -e COMMON_STORAGETYPE=local \
+            milvusdb/milvus:v2.4.15 milvus run standalone
+
+      - name: the vector-store standard cases run on every backend
         env:
           MOONRAG_LIVE: "1"
           MOONRAG_PG_HOST: 127.0.0.1
@@ -154,10 +160,11 @@ jobs:
           MOONRAG_QDRANT_URL: http://127.0.0.1:6333
           MOONRAG_CHROMA_URL: http://127.0.0.1:8000
           MOONRAG_WEAVIATE_URL: http://127.0.0.1:8080
+          MOONRAG_MILVUS_URL: http://127.0.0.1:19530
         run: |
           cd integration
-          for i in $(seq 1 90); do
-            curl -sf http://127.0.0.1:6333/ >/dev/null && curl -sf http://127.0.0.1:8000/api/v2/heartbeat >/dev/null && curl -sf http://127.0.0.1:8080/v1/.well-known/ready >/dev/null && break || sleep 1
+          for i in $(seq 1 120); do
+            curl -sf http://127.0.0.1:6333/ >/dev/null && curl -sf http://127.0.0.1:8000/api/v2/heartbeat >/dev/null && curl -sf http://127.0.0.1:8080/v1/.well-known/ready >/dev/null && curl -sf http://127.0.0.1:9091/healthz >/dev/null && break || sleep 1
           done
-          moon test --target native -p moonbitstack/moonrag-integration/sqlite -p moonbitstack/moonrag-integration/pgvector -p moonbitstack/moonrag-integration/ms9vc -p moonbitstack/moonrag-integration/qdrant -p moonbitstack/moonrag-integration/chroma -p moonbitstack/moonrag-integration/weaviate
+          moon test --target native -p moonbitstack/moonrag-integration/sqlite -p moonbitstack/moonrag-integration/pgvector -p moonbitstack/moonrag-integration/ms9vc -p moonbitstack/moonrag-integration/qdrant -p moonbitstack/moonrag-integration/chroma -p moonbitstack/moonrag-integration/weaviate -p moonbitstack/moonrag-integration/milvus
 
