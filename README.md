@@ -129,7 +129,7 @@ with it; a document whose vector is another width is refused rather than stored.
 table, and whatever else the backend needs, with `IF NOT EXISTS` throughout, so it is safe on every
 start.
 
-Two plans, one store:
+Three plans, one store:
 
 - **PostgreSQL with pgvector.** The vectors live in a `vector(n)` column. `search` is one statement:
   `1 - (embedding <=> $1)` is the cosine similarity the rest of the library ranks by, the metadata
@@ -139,6 +139,11 @@ Two plans, one store:
   the same `Filter::matches` the in-memory store calls — and the cosine is computed by the same
   function. Vectors are stored as little-endian `f64` blobs. A local table read whole per query is the
   right shape for the sizes SQLite is asked to hold; for a corpus that outgrows it, use PostgreSQL.
+- **MySQL 9.** The vectors live in a native `VECTOR(n)` column; `STRING_TO_VECTOR` writes a vector and
+  `VECTOR_TO_STRING` reads it back. Its Community build ships no `DISTANCE`, so the cosine similarity is
+  computed in this process with the same `cosine_similarity` the in-memory store uses, and the metadata
+  filter runs here too. `create` needs nothing beyond the table — there is no extension and no vector
+  index. `moonmysql`'s `MysqlConn` is asynchronous and goes in as it is; CI starts a MySQL 9 container.
 
 SQLite's driver blocks: a local read returns when the row does. `BlockingDriver` presents it as the
 asynchronous driver this store is written against, so no thread is parked to wait for a file. Add
@@ -149,8 +154,12 @@ asynchronous driver this store is written against, so no thread is parked to wai
 let driver = @sql.BlockingDriver::new(@moonsqlite.SqliteDriver::open("app.db"))
 ```
 
-MySQL is refused with `Unsupported` rather than half-supported: the SQL would be a guess and no test
-here reaches it.
+MySQL's driver is asynchronous, like PostgreSQL's:
+
+<!-- nocheck -->
+```moonbit
+let driver = @client.MysqlConn::connect("127.0.0.1", 3306, "root", "ragpass", "moonrag")
+```
 
 ## Retrieving
 
