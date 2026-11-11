@@ -442,6 +442,28 @@
 <div class="member" id="qdrant-qdrantstore-search"><pre class="sig scroll"><code>pub async fn QdrantStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
 </article>
 </section>
+<section id="chroma-top"><h2>chroma</h2><p>A VectorStore held in a Chroma collection over its v2 REST API. Native only: it opens sockets.</p>
+<article class="api" id="chroma-chromastore"><h3><span class="kind">struct</span>ChromaStore</h3>
+
+<pre class="sig scroll"><code>pub struct ChromaStore {
+  base : String
+  tenant : String
+  database : String
+  collection : String
+  embedder : &amp;@moonrag.Embedder
+  dimension : Int32
+  mut id : String
+  mut counter : Int32
+}</code></pre>
+<div class="member" id="chroma-chromastore-add"><pre class="sig scroll"><code>pub async fn ChromaStore::add(Self, Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
+<div class="member" id="chroma-chromastore-clear"><pre class="sig scroll"><code>pub async fn ChromaStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored document, leaving the collection.</p></div>
+<div class="member" id="chroma-chromastore-create"><pre class="sig scroll"><code>pub async fn ChromaStore::create(Self) -&gt; Unit</code></pre><p>Create the collection (or reuse one of the same name) and remember the id Chroma assigns it.</p></div>
+<div class="member" id="chroma-chromastore-delete"><pre class="sig scroll"><code>pub async fn ChromaStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
+<div class="member" id="chroma-chromastore-len"><pre class="sig scroll"><code>pub async fn ChromaStore::len(Self) -&gt; Int64</code></pre><p>The number of stored documents.</p></div>
+<div class="member" id="chroma-chromastore-new"><pre class="sig scroll"><code>pub fn ChromaStore::new(String, &amp;@moonrag.Embedder, dimension~ : Int32, collection? : String, tenant? : String, database? : String) -&gt; Self raise</code></pre><p>A store over the Chroma server at <code>base</code> (for example <code>http://127.0.0.1:8000</code>), in the default tenant and database unless named.</p></div>
+<div class="member" id="chroma-chromastore-search"><pre class="sig scroll"><code>pub async fn ChromaStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
+</article>
+</section>
         </div>
 
         <aside class="rail scroll" aria-label="Packages">
@@ -499,6 +521,9 @@
 </div>
 <div class="group"><b>qdrant</b>
 <a href="#qdrant-qdrantstore">QdrantStore</a>
+</div>
+<div class="group"><b>chroma</b>
+<a href="#chroma-chromastore">ChromaStore</a>
 </div>
             </div>
             <p class="rail-note">

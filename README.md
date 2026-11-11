@@ -172,6 +172,15 @@ every backend ranks the same way rather than each trusting its server. CI starts
 let store = @qdrant.QdrantStore::new("http://127.0.0.1:6333", embedder, dimension=256)
 ```
 
+Chroma is a backend too, `moonbitstack/moonrag/chroma`, against its v2 REST API. It keeps the document
+ids Chroma's own strings, so nothing is folded; `create` remembers the collection UUID Chroma assigns,
+`upsert` replaces by id, and search reads every embedding back and ranks here, as the others do.
+
+<!-- nocheck -->
+```moonbit
+let store = @chroma.ChromaStore::new("http://127.0.0.1:8000", embedder, dimension=256)
+```
+
 ## Retrieving
 
 `SimilarityRetriever` embeds the query and ranks by cosine similarity.

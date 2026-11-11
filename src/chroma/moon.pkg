@@ -1,0 +1,15 @@
+// The Chroma backend: a `VectorStore` over Chroma's v2 REST API, native only (it opens sockets).
+//
+// Chroma's v2 API addresses a collection by the UUID it returns on create, not by name, so the store
+// keeps that id after `create`. Like SQLite and MySQL, the cosine is recomputed in this process from
+// the embeddings the server returns, and the filter is the same `Filter::matches`, so every backend
+// ranks the same way.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitlang/async/http",
+  "moonbitlang/async/io",
+  "moonbitlang/core/json",
+}
+
+supported_targets = "native"

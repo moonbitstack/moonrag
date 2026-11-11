@@ -137,6 +137,9 @@ Qdrant is a backend of its own, `moonbitstack/moonrag/qdrant`, native only becau
 `@qdrant.QdrantStore::new(url, embedder, dimension=256)` over its REST API. Like SQLite and MySQL it
 recomputes the cosine here from the vector it reads back, so every backend ranks the same way.
 
+Chroma is another, `moonbitstack/moonrag/chroma`, against its v2 REST API: `@chroma.ChromaStore::new(url,
+embedder, dimension=256)`. Its document ids are Chroma's strings; `create` remembers the collection UUID.
+
 ## Bring your own model
 
 ```moonbit

@@ -54,6 +54,11 @@ PACKAGES = [
         "src/qdrant",
         "A VectorStore held in a Qdrant collection over its REST API. Native only: it opens sockets.",
     ),
+    (
+        "moonbitstack/moonrag/chroma",
+        "src/chroma",
+        "A VectorStore held in a Chroma collection over its v2 REST API. Native only: it opens sockets.",
+    ),
 ]
 
 DECL = re.compile(
