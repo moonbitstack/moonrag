@@ -45,7 +45,7 @@ jobs:
         run: |
           moon build --target js src/examples/browser
           mkdir -p docs/engine
-          cp _build/js/debug/build/examples/browser/browser.js docs/engine/moonrag.js
+          cp "$(find _build/js -path '*examples/browser/browser.js' | head -n1)" docs/engine/moonrag.js
 
       - name: the API reference is up to date
         run: |
