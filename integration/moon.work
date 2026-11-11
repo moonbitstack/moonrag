@@ -1,8 +1,8 @@
 members = [
   "..",
   ".",
-  "../moonqdrant",
-  "../moonchroma",
-  "../moonweavte",
-  "../moonmilvus",
+  "../drivers/qdrant",
+  "../drivers/chroma",
+  "../drivers/weavte",
+  "../drivers/milvus",
 ]

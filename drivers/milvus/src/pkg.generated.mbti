@@ -1,0 +1,31 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonmilvus"
+
+import {
+  "moonbitstack/moonrag",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct MilvusStore {
+  base : String
+  collection : String
+  embedder : &@moonrag.Embedder
+  dimension : Int32
+  mut counter : Int32
+}
+pub async fn MilvusStore::add(Self, Array[@moonrag.Document]) -> Array[String]
+pub async fn MilvusStore::clear(Self) -> Unit
+pub async fn MilvusStore::create(Self) -> Unit
+pub async fn MilvusStore::delete(Self, ArrayView[String]) -> Unit
+pub async fn MilvusStore::len(Self) -> Int64
+pub fn MilvusStore::new(String, &@moonrag.Embedder, dimension~ : Int32, collection? : String) -> Self raise
+pub async fn MilvusStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -> Array[@moonrag.Scored]
+pub impl @moonrag.VectorStore for MilvusStore
+
+// Type aliases
+
+// Traits

@@ -1,0 +1,34 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonchroma"
+
+import {
+  "moonbitstack/moonrag",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct ChromaStore {
+  base : String
+  tenant : String
+  database : String
+  collection : String
+  embedder : &@moonrag.Embedder
+  dimension : Int32
+  mut id : String
+  mut counter : Int32
+}
+pub async fn ChromaStore::add(Self, Array[@moonrag.Document]) -> Array[String]
+pub async fn ChromaStore::clear(Self) -> Unit
+pub async fn ChromaStore::create(Self) -> Unit
+pub async fn ChromaStore::delete(Self, ArrayView[String]) -> Unit
+pub async fn ChromaStore::len(Self) -> Int64
+pub fn ChromaStore::new(String, &@moonrag.Embedder, dimension~ : Int32, collection? : String, tenant? : String, database? : String) -> Self raise
+pub async fn ChromaStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -> Array[@moonrag.Scored]
+pub impl @moonrag.VectorStore for ChromaStore
+
+// Type aliases
+
+// Traits

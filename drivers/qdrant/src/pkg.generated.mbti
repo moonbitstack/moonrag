@@ -1,0 +1,31 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonqdrant"
+
+import {
+  "moonbitstack/moonrag",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct QdrantStore {
+  base : String
+  collection : String
+  embedder : &@moonrag.Embedder
+  dimension : Int32
+  mut counter : Int32
+}
+pub async fn QdrantStore::add(Self, Array[@moonrag.Document]) -> Array[String]
+pub async fn QdrantStore::clear(Self) -> Unit
+pub async fn QdrantStore::create(Self) -> Unit
+pub async fn QdrantStore::delete(Self, ArrayView[String]) -> Unit
+pub async fn QdrantStore::len(Self) -> Int64
+pub fn QdrantStore::new(String, &@moonrag.Embedder, dimension~ : Int32, collection? : String) -> Self raise
+pub async fn QdrantStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -> Array[@moonrag.Scored]
+pub impl @moonrag.VectorStore for QdrantStore
+
+// Type aliases
+
+// Traits
