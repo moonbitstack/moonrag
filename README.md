@@ -181,6 +181,15 @@ ids Chroma's own strings, so nothing is folded; `create` remembers the collectio
 let store = @chroma.ChromaStore::new("http://127.0.0.1:8000", embedder, dimension=256)
 ```
 
+Weaviate rounds out the set, `moonbitstack/moonrag/weaviate`. Its objects must be UUIDs, so a document's
+id is folded into one deterministically and kept in a `docid` property; upsert is a delete then a create
+by that UUID, and search reads every vector back and ranks here.
+
+<!-- nocheck -->
+```moonbit
+let store = @weaviate.WeaviateStore::new("http://127.0.0.1:8080", embedder, dimension=256)
+```
+
 ## Retrieving
 
 `SimilarityRetriever` embeds the query and ranks by cosine similarity.

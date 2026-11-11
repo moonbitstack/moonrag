@@ -59,6 +59,11 @@ PACKAGES = [
         "src/chroma",
         "A VectorStore held in a Chroma collection over its v2 REST API. Native only: it opens sockets.",
     ),
+    (
+        "moonbitstack/moonrag/weaviate",
+        "src/weaviate",
+        "A VectorStore held in a Weaviate class over its REST API. Native only: it opens sockets.",
+    ),
 ]
 
 DECL = re.compile(

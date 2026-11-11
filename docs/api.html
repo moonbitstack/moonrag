@@ -464,6 +464,25 @@
 <div class="member" id="chroma-chromastore-search"><pre class="sig scroll"><code>pub async fn ChromaStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
 </article>
 </section>
+<section id="weaviate-top"><h2>weaviate</h2><p>A VectorStore held in a Weaviate class over its REST API. Native only: it opens sockets.</p>
+<article class="api" id="weaviate-weaviatestore"><h3><span class="kind">struct</span>WeaviateStore</h3>
+
+<pre class="sig scroll"><code>pub struct WeaviateStore {
+  base : String
+  class_name : String
+  embedder : &amp;@moonrag.Embedder
+  dimension : Int32
+  mut counter : Int32
+}</code></pre>
+<div class="member" id="weaviate-weaviatestore-add"><pre class="sig scroll"><code>pub async fn WeaviateStore::add(Self, Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
+<div class="member" id="weaviate-weaviatestore-clear"><pre class="sig scroll"><code>pub async fn WeaviateStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored object, leaving the class.</p></div>
+<div class="member" id="weaviate-weaviatestore-create"><pre class="sig scroll"><code>pub async fn WeaviateStore::create(Self) -&gt; Unit</code></pre><p>Create the class this store needs. Safe on every start: an existing class answers 422, which is not an error here.</p></div>
+<div class="member" id="weaviate-weaviatestore-delete"><pre class="sig scroll"><code>pub async fn WeaviateStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
+<div class="member" id="weaviate-weaviatestore-len"><pre class="sig scroll"><code>pub async fn WeaviateStore::len(Self) -&gt; Int64</code></pre><p>The number of stored objects.</p></div>
+<div class="member" id="weaviate-weaviatestore-new"><pre class="sig scroll"><code>pub fn WeaviateStore::new(String, &amp;@moonrag.Embedder, dimension~ : Int32, class_name? : String) -&gt; Self raise</code></pre><p>A store over the Weaviate server at <code>base</code> (for example <code>http://127.0.0.1:8080</code>), in class <code>class_name</code>.</p></div>
+<div class="member" id="weaviate-weaviatestore-search"><pre class="sig scroll"><code>pub async fn WeaviateStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
+</article>
+</section>
         </div>
 
         <aside class="rail scroll" aria-label="Packages">
@@ -524,6 +543,9 @@
 </div>
 <div class="group"><b>chroma</b>
 <a href="#chroma-chromastore">ChromaStore</a>
+</div>
+<div class="group"><b>weaviate</b>
+<a href="#weaviate-weaviatestore">WeaviateStore</a>
 </div>
             </div>
             <p class="rail-note">

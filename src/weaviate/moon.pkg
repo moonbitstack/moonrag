@@ -1,0 +1,14 @@
+// The Weaviate backend: a `VectorStore` over Weaviate's REST API, native only (it opens sockets).
+//
+// Weaviate object ids must be UUIDs, so a document's string id is hashed into one deterministically and
+// travels back inside a `docid` property — the document the store returns keeps the id the caller gave
+// it. Like SQLite and MySQL, the cosine is recomputed in this process from the vector Weaviate returns.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitlang/async/http",
+  "moonbitlang/async/io",
+  "moonbitlang/core/json",
+}
+
+supported_targets = "native"

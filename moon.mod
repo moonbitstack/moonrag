@@ -47,6 +47,7 @@ keywords = [
   "mysql9",
   "qdrant",
   "chroma",
+  "weaviate",
   "vector-type",
   "postgresql",
   "hnsw",

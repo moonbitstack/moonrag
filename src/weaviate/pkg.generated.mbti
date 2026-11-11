@@ -1,0 +1,31 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonrag/weaviate"
+
+import {
+  "moonbitstack/moonrag",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct WeaviateStore {
+  base : String
+  class_name : String
+  embedder : &@moonrag.Embedder
+  dimension : Int32
+  mut counter : Int32
+}
+pub async fn WeaviateStore::add(Self, Array[@moonrag.Document]) -> Array[String]
+pub async fn WeaviateStore::clear(Self) -> Unit
+pub async fn WeaviateStore::create(Self) -> Unit
+pub async fn WeaviateStore::delete(Self, ArrayView[String]) -> Unit
+pub async fn WeaviateStore::len(Self) -> Int64
+pub fn WeaviateStore::new(String, &@moonrag.Embedder, dimension~ : Int32, class_name? : String) -> Self raise
+pub async fn WeaviateStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -> Array[@moonrag.Scored]
+pub impl @moonrag.VectorStore for WeaviateStore
+
+// Type aliases
+
+// Traits

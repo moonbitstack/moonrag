@@ -113,6 +113,16 @@ jobs:
         image: chromadb/chroma:latest
         ports:
           - 8000:8000
+      weaviate:
+        image: semitechnologies/weaviate:latest
+        env:
+          AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+          PERSISTENCE_DATA_PATH: /var/lib/weaviate
+          DEFAULT_VECTORIZER_MODULE: none
+          CLUSTER_HOSTNAME: node1
+          QUERY_DEFAULTS_LIMIT: "100"
+        ports:
+          - 8080:8080
     steps:
       - uses: actions/checkout@v7
         with:
@@ -143,10 +153,11 @@ jobs:
           MOONRAG_MYSQL_DATABASE: moonrag
           MOONRAG_QDRANT_URL: http://127.0.0.1:6333
           MOONRAG_CHROMA_URL: http://127.0.0.1:8000
+          MOONRAG_WEAVIATE_URL: http://127.0.0.1:8080
         run: |
           cd integration
-          for i in $(seq 1 60); do
-            curl -sf http://127.0.0.1:6333/ >/dev/null && curl -sf http://127.0.0.1:8000/api/v2/heartbeat >/dev/null && break || sleep 1
+          for i in $(seq 1 90); do
+            curl -sf http://127.0.0.1:6333/ >/dev/null && curl -sf http://127.0.0.1:8000/api/v2/heartbeat >/dev/null && curl -sf http://127.0.0.1:8080/v1/.well-known/ready >/dev/null && break || sleep 1
           done
-          moon test --target native -p moonbitstack/moonrag-integration/sqlite -p moonbitstack/moonrag-integration/pgvector -p moonbitstack/moonrag-integration/ms9vc -p moonbitstack/moonrag-integration/qdrant -p moonbitstack/moonrag-integration/chroma
+          moon test --target native -p moonbitstack/moonrag-integration/sqlite -p moonbitstack/moonrag-integration/pgvector -p moonbitstack/moonrag-integration/ms9vc -p moonbitstack/moonrag-integration/qdrant -p moonbitstack/moonrag-integration/chroma -p moonbitstack/moonrag-integration/weaviate
 

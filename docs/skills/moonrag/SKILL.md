@@ -140,6 +140,9 @@ recomputes the cosine here from the vector it reads back, so every backend ranks
 Chroma is another, `moonbitstack/moonrag/chroma`, against its v2 REST API: `@chroma.ChromaStore::new(url,
 embedder, dimension=256)`. Its document ids are Chroma's strings; `create` remembers the collection UUID.
 
+Weaviate, `moonbitstack/moonrag/weaviate`, needs UUID object ids: `@weaviate.WeaviateStore::new(url,
+embedder, dimension=256, class_name="MoonragDocument")` folds each document id into one and upserts by it.
+
 ## Bring your own model
 
 ```moonbit
