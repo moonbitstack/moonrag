@@ -1,0 +1,19 @@
+// The standard cases against MySQL 9: the backend whose native `VECTOR` column is used here. The
+// vectors are written with `STRING_TO_VECTOR` and read back with `VECTOR_TO_STRING`; its Community
+// build ships no `DISTANCE`, so the cosine score is computed here, not in the server.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitstack/moonrag/sql",
+  "moonbitstack/moonrag-integration/standard",
+  "moonbitstack/moondb",
+  "moonbitstack/moonmysql/client",
+  "moonbitlang/async",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+} for "test"
+
+options(
+  "supported_targets": "native",
+  "max_concurrent_tests": 1,
+)
