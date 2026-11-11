@@ -16,6 +16,7 @@ keywords = [
   "pgvector",
   "mysql",
   "mysql9",
+  "ms9vc",
   "integration",
   "moonbit",
 ]

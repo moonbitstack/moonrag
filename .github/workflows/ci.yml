@@ -135,5 +135,5 @@ jobs:
           MOONRAG_MYSQL_DATABASE: moonrag
         run: |
           cd integration
-          moon test --target native -p moonbitstack/moonrag-integration/sqlite -p moonbitstack/moonrag-integration/pgvector -p moonbitstack/moonrag-integration/mysql
+          moon test --target native -p moonbitstack/moonrag-integration/sqlite -p moonbitstack/moonrag-integration/pgvector -p moonbitstack/moonrag-integration/ms9vc
 
