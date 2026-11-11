@@ -1,0 +1,15 @@
+// The Qdrant backend: a `VectorStore` over Qdrant's REST API, native only (it opens sockets).
+//
+// Qdrant can rank with cosine on its own, but the score reported here is recomputed in this process
+// from the stored vector with the same `cosine_similarity` the in-memory store uses, and the filter
+// is the same `Filter::matches` every other store reads — so all backends agree on what a match is,
+// having one definition rather than one per server.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitlang/async/http",
+  "moonbitlang/async/io",
+  "moonbitlang/core/json",
+}
+
+supported_targets = "native"

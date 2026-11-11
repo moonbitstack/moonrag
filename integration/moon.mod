@@ -17,6 +17,7 @@ keywords = [
   "mysql",
   "mysql9",
   "ms9vc",
+  "qdrant",
   "integration",
   "moonbit",
 ]

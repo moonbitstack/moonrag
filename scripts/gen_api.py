@@ -49,6 +49,11 @@ PACKAGES = [
         "src/sql",
         "The same store over a table, for any driver implementing moondb's AsyncDriver. PostgreSQL with pgvector ranks in the statement; SQLite ranks in this process.",
     ),
+    (
+        "moonbitstack/moonrag/qdrant",
+        "src/qdrant",
+        "A VectorStore held in a Qdrant collection over its REST API. Native only: it opens sockets.",
+    ),
 ]
 
 DECL = re.compile(

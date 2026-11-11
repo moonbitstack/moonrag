@@ -45,6 +45,7 @@ keywords = [
   "pgvector",
   "mysql",
   "mysql9",
+  "qdrant",
   "vector-type",
   "postgresql",
   "hnsw",

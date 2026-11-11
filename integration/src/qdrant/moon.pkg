@@ -1,0 +1,14 @@
+// Qdrant over a server the tests do not start: `MOONRAG_LIVE` says one is there.
+
+import {
+  "moonbitstack/moonrag",
+  "moonbitstack/moonrag/qdrant" @qstore,
+  "moonbitstack/moonrag-integration/standard",
+  "moonbitlang/async",
+  "moonbitlang/core/env",
+} for "test"
+
+options(
+  "supported_targets": "native",
+  "max_concurrent_tests": 1,
+)

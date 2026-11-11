@@ -129,7 +129,7 @@ with it; a document whose vector is another width is refused rather than stored.
 table, and whatever else the backend needs, with `IF NOT EXISTS` throughout, so it is safe on every
 start.
 
-Three plans, one store:
+The SQL store, in three plans:
 
 - **PostgreSQL with pgvector.** The vectors live in a `vector(n)` column. `search` is one statement:
   `1 - (embedding <=> $1)` is the cosine similarity the rest of the library ranks by, the metadata
@@ -159,6 +159,17 @@ MySQL's driver is asynchronous, like PostgreSQL's:
 <!-- nocheck -->
 ```moonbit
 let driver = @client.MysqlConn::connect("127.0.0.1", 3306, "root", "ragpass", "moonrag")
+```
+
+Qdrant is a backend of its own, `moonbitstack/moonrag/qdrant`, native only because it opens sockets.
+It keeps each document as a point in a collection; its string id is folded into a number Qdrant
+accepts and rides back inside the payload. Like SQLite and MySQL, the cosine is recomputed in this
+process from the vector the store reads back, and the filter is the same `Filter::matches` — so
+every backend ranks the same way rather than each trusting its server. CI starts a Qdrant container.
+
+<!-- nocheck -->
+```moonbit
+let store = @qdrant.QdrantStore::new("http://127.0.0.1:6333", embedder, dimension=256)
 ```
 
 ## Retrieving
@@ -300,19 +311,19 @@ The source key defaults to `source`, the metadata key every loader writes. Movin
 - **Markdown splitting.** Eight cases from the header splitter of the same reference release — a preamble, nested levels, adjacent headings, a section that is one code block, and a `#` inside a fence that must not split — replay chunk text and heading path. Two of the reference's behaviours are deliberately not followed, and are covered by this library's own tests instead: it joins the blocks of a section with a Markdown hard break (`"  \n"`), and it strips every line, which flattens the indentation of code. `scripts/gen_langchain_cases.py` regenerates the fixtures.
 - **Ranking and MMR.** Five ranking cases and seven MMR cases over fixed vectors: the same documents in the same order, and the same `lambda` trade-offs, as the reference returns. A score is a cosine summed in a different order, so the fixtures are compared to one part in a trillion; the order is compared exactly.
 - **Store and retrieval.** The behaviours a vector-store standard suite requires — add, search with scores, limit, metadata filtering, delete by id, update by id, empty store, dimension mismatch, order independence — plus a retriever's limit, descending scores, filters and MMR diversity.
-- **Three backends.** The same standard cases run against the in-memory store, against SQLite, and against PostgreSQL with pgvector, which is the only way to know that one contract holds over one table and one process. The pgvector cases read the column type back out of the catalogue and compare the store's score with the one the database computed, so a store that ranked in this process and said otherwise would fail.
+- **Every backend.** The same standard cases run against the in-memory store, SQLite, PostgreSQL with pgvector, MySQL 9, and a Qdrant collection — which is the only way to know that one contract holds over one table, one server and one process. The pgvector cases read the column type back out of the catalogue and compare the store's score with the one the database computed, so a store that ranked in this process and said otherwise would fail.
 - **End to end.** Load, split, index and retrieve as one test over a page and a note, including a second pass that must embed nothing.
 - **Against a filesystem.** The file front end is tested by writing real files to a temporary directory and reading them back through all five loaders.
 
-The three-backend cases live in `integration/`, a module of its own, so a program that uses this
+The backend cases live in `integration/`, a module of its own, so a program that uses this
 library does not download a SQLite amalgamation and a PostgreSQL driver for the sake of a test:
 
 ```shell
 cd integration && moon test --target native
 ```
 
-The pgvector cases need a server; `MOONRAG_LIVE=1` says one is there, and then one has to answer.
-Without it they print why they did nothing and return.
+The pgvector, MySQL and Qdrant cases need a server; `MOONRAG_LIVE=1` says one is there, and then one
+has to answer. Without it they print why they did nothing and return.
 
 ## Examples
 

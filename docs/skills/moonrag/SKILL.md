@@ -1,6 +1,6 @@
 ---
 name: moonrag
-description: Build a retrieval pipeline in MoonBit with moonbitstack/moonrag — documents with metadata, loaders for text/CSV/JSON/Markdown/HTML, recursive/token/Markdown/HTML splitters, an in-memory or SQL vector store (SQLite, PostgreSQL with pgvector) with filters, similarity and MMR retrievers, and incremental indexing. Use when chunking a corpus, storing embeddings, searching them, or wiring retrieval into an agent in MoonBit.
+description: Build a retrieval pipeline in MoonBit with moonbitstack/moonrag — documents with metadata, loaders for text/CSV/JSON/Markdown/HTML, recursive/token/Markdown/HTML splitters, an in-memory or SQL vector store (SQLite, PostgreSQL with pgvector, MySQL 9) or a Qdrant collection, with filters, similarity and MMR retrievers, and incremental indexing. Use when chunking a corpus, storing embeddings, searching them, or wiring retrieval into an agent in MoonBit.
 ---
 
 # moonrag
@@ -132,6 +132,10 @@ back and the distance is computed in this process with the same filter tree the 
 `moonpostgres`'s `PgConn` and `moonmysql`'s `MysqlConn` are both asynchronous and go in as they are.
 MySQL 9 keeps the vectors in its native `VECTOR(n)` column (`STRING_TO_VECTOR` writes, `VECTOR_TO_STRING`
 reads); its Community build has no `DISTANCE`, so the cosine score is computed here, not in the server.
+
+Qdrant is a backend of its own, `moonbitstack/moonrag/qdrant`, native only because it opens sockets:
+`@qdrant.QdrantStore::new(url, embedder, dimension=256)` over its REST API. Like SQLite and MySQL it
+recomputes the cosine here from the vector it reads back, so every backend ranks the same way.
 
 ## Bring your own model
 

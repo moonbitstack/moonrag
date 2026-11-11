@@ -423,6 +423,25 @@
 <div class="member" id="sql-sqlvectorstore-search"><pre class="sig scroll"><code>pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::search(Self[T], ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
 </article>
 </section>
+<section id="qdrant-top"><h2>qdrant</h2><p>A VectorStore held in a Qdrant collection over its REST API. Native only: it opens sockets.</p>
+<article class="api" id="qdrant-qdrantstore"><h3><span class="kind">struct</span>QdrantStore</h3>
+
+<pre class="sig scroll"><code>pub struct QdrantStore {
+  base : String
+  collection : String
+  embedder : &amp;@moonrag.Embedder
+  dimension : Int32
+  mut counter : Int32
+}</code></pre>
+<div class="member" id="qdrant-qdrantstore-add"><pre class="sig scroll"><code>pub async fn QdrantStore::add(Self, Array[@moonrag.Document]) -&gt; Array[String]</code></pre></div>
+<div class="member" id="qdrant-qdrantstore-clear"><pre class="sig scroll"><code>pub async fn QdrantStore::clear(Self) -&gt; Unit</code></pre><p>Remove every stored point by recreating the collection empty.</p></div>
+<div class="member" id="qdrant-qdrantstore-create"><pre class="sig scroll"><code>pub async fn QdrantStore::create(Self) -&gt; Unit</code></pre><p>Create the collection this store needs. Safe to call on every start: an existing collection of the same shape is left as it is.</p></div>
+<div class="member" id="qdrant-qdrantstore-delete"><pre class="sig scroll"><code>pub async fn QdrantStore::delete(Self, ArrayView[String]) -&gt; Unit</code></pre></div>
+<div class="member" id="qdrant-qdrantstore-len"><pre class="sig scroll"><code>pub async fn QdrantStore::len(Self) -&gt; Int64</code></pre><p>The number of stored points.</p></div>
+<div class="member" id="qdrant-qdrantstore-new"><pre class="sig scroll"><code>pub fn QdrantStore::new(String, &amp;@moonrag.Embedder, dimension~ : Int32, collection? : String) -&gt; Self raise</code></pre><p>A store over the Qdrant server at <code>base</code> (for example <code>http://127.0.0.1:6333</code>).</p></div>
+<div class="member" id="qdrant-qdrantstore-search"><pre class="sig scroll"><code>pub async fn QdrantStore::search(Self, ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -&gt; Array[@moonrag.Scored]</code></pre></div>
+</article>
+</section>
         </div>
 
         <aside class="rail scroll" aria-label="Packages">
@@ -477,6 +496,9 @@
 <div class="group"><b>sql</b>
 <a href="#sql-blockingdriver">BlockingDriver</a>
 <a href="#sql-sqlvectorstore">SqlVectorStore</a>
+</div>
+<div class="group"><b>qdrant</b>
+<a href="#qdrant-qdrantstore">QdrantStore</a>
 </div>
             </div>
             <p class="rail-note">
