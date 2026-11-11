@@ -4,9 +4,9 @@
 //
 // Where the backend can rank vectors itself (PostgreSQL with pgvector) the ordering, the scoring and
 // the metadata filter all happen in the statement, so `LIMIT` cuts before the rows travel. Where it
-// cannot (SQLite) the rows come back whole, the distance is computed here with the same arithmetic
-// the in-memory store uses, and the same filter tree is applied by the same code — so the two
-// backends agree on what a match is, having only one definition of it.
+// cannot (SQLite, and MySQL — its Community build ships no `DISTANCE`) the rows come back whole, the
+// distance is computed here with the same arithmetic the in-memory store uses, and the same filter
+// tree is applied by the same code — so the backends agree on what a match is, having one definition.
 
 ///|
 /// A `VectorStore` held in a SQL table, over any driver implementing `moondb`'s `AsyncDriver`.
@@ -15,8 +15,7 @@
 /// column has to be declared with it. `table` is the name to keep rows in; it must be a plain
 /// identifier, since it is written into the statement rather than bound as a value.
 ///
-/// Raises `Empty` when `dimension` is not positive, `Malformed` when `table` is not an identifier, and
-/// `Unsupported` for MySQL, which no test here reaches.
+/// Raises `Empty` when `dimension` is not positive and `Malformed` when `table` is not an identifier.
 pub struct SqlVectorStore[T] {
   driver : T
   embedder : &@moonrag.Embedder
@@ -26,7 +25,7 @@ pub struct SqlVectorStore[T] {
 }
 
 ///|
-pub fn[T : @moondb.AsyncDriver] SqlVectorStore::new(
+pub fn[T] SqlVectorStore::new(
   driver : T,
   embedder : &@moonrag.Embedder,
   dimension~ : Int32,
@@ -35,9 +34,6 @@ pub fn[T : @moondb.AsyncDriver] SqlVectorStore::new(
   guard dimension > 0 else { raise @moonrag.Empty(what="dimension") }
   guard is_identifier(table) else {
     raise @moonrag.Malformed(at=0, why="table name")
-  }
-  guard driver.dialect() != @moondb.Mysql else {
-    raise @moonrag.Unsupported(what="mysql")
   }
   { driver, embedder, dimension, table, counter: 0, }
 }
@@ -64,9 +60,23 @@ fn is_identifier(name : String) -> Bool {
 }
 
 ///|
+/// Quote `name` as an identifier in `dialect`'s spelling: MySQL wants backticks, the other dialects
+/// want double quotes. Writing the portable double-quoted names throughout and switching MySQL to
+/// backticks here keeps the statements correct on every backend without leaning on a session
+/// `sql_mode` that a pooled connection may not carry.
+fn quote_ident(dialect : @moondb.Dialect, name : String) -> String {
+  match dialect {
+    @moondb.Mysql => "`" + name + "`"
+    _ => "\"" + name + "\""
+  }
+}
+
+///|
 /// The store's table, quoted so a name that happens to be a keyword still works.
-fn[T] SqlVectorStore::table_sql(self : SqlVectorStore[T]) -> String {
-  "\"" + self.table + "\""
+fn[T : @moondb.AsyncDriver] SqlVectorStore::table_sql(
+  self : SqlVectorStore[T],
+) -> String {
+  quote_ident(self.driver.dialect(), self.table)
 }
 
 ///|
@@ -76,26 +86,49 @@ fn create_table_sql(
   table : String,
   dimension : Int32,
 ) -> String {
-  let name = "\"" + table + "\""
+  let name = quote_ident(dialect, table)
+  let column = fn(c : String) { quote_ident(dialect, c) }
   match dialect {
     @moondb.Postgres =>
       "CREATE TABLE IF NOT EXISTS " +
       name +
       " (" +
-      "\"id\" TEXT PRIMARY KEY, " +
-      "\"text\" TEXT NOT NULL, " +
-      "\"meta\" JSONB NOT NULL, " +
-      "\"embedding\" VECTOR(" +
+      column("id") +
+      " TEXT PRIMARY KEY, " +
+      column("text") +
+      " TEXT NOT NULL, " +
+      column("meta") +
+      " JSONB NOT NULL, " +
+      column("embedding") +
+      " VECTOR(" +
+      dimension.to_string() +
+      ") NOT NULL)"
+    @moondb.Mysql =>
+      "CREATE TABLE IF NOT EXISTS " +
+      name +
+      " (" +
+      column("id") +
+      " VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin PRIMARY KEY, " +
+      column("text") +
+      " TEXT NOT NULL, " +
+      column("meta") +
+      " TEXT NOT NULL, " +
+      column("embedding") +
+      " VECTOR(" +
       dimension.to_string() +
       ") NOT NULL)"
     _ =>
       "CREATE TABLE IF NOT EXISTS " +
       name +
       " (" +
-      "\"id\" TEXT PRIMARY KEY, " +
-      "\"text\" TEXT NOT NULL, " +
-      "\"meta\" TEXT NOT NULL, " +
-      "\"vector\" BLOB NOT NULL)"
+      column("id") +
+      " TEXT PRIMARY KEY, " +
+      column("text") +
+      " TEXT NOT NULL, " +
+      column("meta") +
+      " TEXT NOT NULL, " +
+      column("vector") +
+      " BLOB NOT NULL)"
   }
 }
 
@@ -118,21 +151,90 @@ fn upsert_sql(
   table : String,
   dimension : Int32,
 ) -> String {
-  let name = "\"" + table + "\""
+  let name = quote_ident(dialect, table)
+  let column = fn(c : String) { quote_ident(dialect, c) }
   let _ = dimension
   match dialect {
     @moondb.Postgres =>
       "INSERT INTO " +
       name +
-      " (\"id\", \"text\", \"meta\", \"embedding\") VALUES ($1, $2, $3::jsonb, $4::vector)" +
-      " ON CONFLICT (\"id\") DO UPDATE SET \"text\" = EXCLUDED.\"text\"," +
-      " \"meta\" = EXCLUDED.\"meta\", \"embedding\" = EXCLUDED.\"embedding\""
+      " (" +
+      column("id") +
+      ", " +
+      column("text") +
+      ", " +
+      column("meta") +
+      ", " +
+      column("embedding") +
+      ") VALUES ($1, $2, $3::jsonb, $4::vector)" +
+      " ON CONFLICT (" +
+      column("id") +
+      ") DO UPDATE SET " +
+      column("text") +
+      " = EXCLUDED." +
+      column("text") +
+      "," +
+      " " +
+      column("meta") +
+      " = EXCLUDED." +
+      column("meta") +
+      ", " +
+      column("embedding") +
+      " = EXCLUDED." +
+      column("embedding")
+    @moondb.Mysql =>
+      "INSERT INTO " +
+      name +
+      " (" +
+      column("id") +
+      ", " +
+      column("text") +
+      ", " +
+      column("meta") +
+      ", " +
+      column("embedding") +
+      ") VALUES (?, ?, ?, STRING_TO_VECTOR(?))" +
+      " ON DUPLICATE KEY UPDATE " +
+      column("text") +
+      " = VALUES(" +
+      column("text") +
+      ")," +
+      " " +
+      column("meta") +
+      " = VALUES(" +
+      column("meta") +
+      "), " +
+      column("embedding") +
+      " = VALUES(" +
+      column("embedding") +
+      ")"
     _ =>
       "INSERT INTO " +
       name +
-      " (\"id\", \"text\", \"meta\", \"vector\") VALUES (?, ?, ?, ?)" +
-      " ON CONFLICT (\"id\") DO UPDATE SET \"text\" = excluded.\"text\"," +
-      " \"meta\" = excluded.\"meta\", \"vector\" = excluded.\"vector\""
+      " (" +
+      column("id") +
+      ", " +
+      column("text") +
+      ", " +
+      column("meta") +
+      ", " +
+      column("vector") +
+      ") VALUES (?, ?, ?, ?)" +
+      " ON CONFLICT (" +
+      column("id") +
+      ") DO UPDATE SET " +
+      column("text") +
+      " = excluded." +
+      column("text") +
+      "," +
+      " " +
+      column("meta") +
+      " = excluded." +
+      column("meta") +
+      ", " +
+      column("vector") +
+      " = excluded." +
+      column("vector")
   }
 }
 
@@ -187,6 +289,11 @@ async fn[T : @moondb.AsyncDriver] SqlVectorStore::assign_id(
 ///|
 /// Create the table this store needs, and on PostgreSQL the extension and the index. Safe to call on
 /// every start: every statement is `IF NOT EXISTS`.
+///
+/// MySQL 9 ships the `VECTOR` type with the server, so there is no extension to install and no
+/// vector index to build; its Community build has no `DISTANCE`, so the cosine score is computed
+/// here from the stored vectors rather than asked of the server. Its identifiers are written with
+/// backticks (see `quote_ident`), so no session `sql_mode` change is needed.
 pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::create(
   self : SqlVectorStore[T],
 ) -> Unit {
@@ -229,11 +336,21 @@ pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::get(
   self : SqlVectorStore[T],
   id : String,
 ) -> @moonrag.Document? {
+  let dialect = self.driver.dialect()
+  let column = fn(c : String) { quote_ident(dialect, c) }
   let rows = self.driver.query(
-    "SELECT \"id\", \"text\", \"meta\" FROM " +
+    "SELECT " +
+    column("id") +
+    ", " +
+    column("text") +
+    ", " +
+    column("meta") +
+    " FROM " +
     self.table_sql() +
-    " WHERE \"id\" = " +
-    self.driver.dialect().placeholder(1),
+    " WHERE " +
+    column("id") +
+    " = " +
+    dialect.placeholder(1),
     [@moondb.Value::Text(id)],
   )
   if rows.length() == 0 {
@@ -269,7 +386,8 @@ pub impl[T : @moondb.AsyncDriver] @moonrag.VectorStore for SqlVectorStore[T] wit
   for i, document in documents {
     let id = self.assign_id(document)
     let vector = match dialect {
-      @moondb.Postgres => @moondb.Value::Text(vector_literal(vectors[i][:]))
+      @moondb.Postgres | @moondb.Mysql =>
+        @moondb.Value::Text(vector_literal(vectors[i][:]))
       _ => @moondb.Value::Blob(encode_vector(vectors[i][:]))
     }
     rows.push([
@@ -309,7 +427,9 @@ pub impl[T : @moondb.AsyncDriver] @moonrag.VectorStore for SqlVectorStore[T] wit
   }
   let sql = "DELETE FROM " +
     self.table_sql() +
-    " WHERE \"id\" IN (" +
+    " WHERE " +
+    quote_ident(dialect, "id") +
+    " IN (" +
     placeholders.join(", ") +
     ")"
   let _ = self.driver.execute(sql, values)
@@ -336,8 +456,70 @@ pub impl[T : @moondb.AsyncDriver] @moonrag.VectorStore for SqlVectorStore[T] wit
   }
   match self.driver.dialect() {
     @moondb.Postgres => self.search_ranked(vector, limit~, filter?)
+    @moondb.Mysql => self.search_mysql(vector, limit~, filter?)
     _ => self.search_here(vector, limit~, filter?)
   }
+}
+
+///|
+/// The `SELECT` a MySQL search runs: every row, its vector read back as text so this process can
+/// score it. `table` is the quoted name; `clause` is the optional `WHERE` body. MySQL's Community
+/// build has no `DISTANCE`, so the cosine number is computed here, not asked of the server.
+fn mysql_search_sql(table : String, clause : String) -> String {
+  "SELECT `id`, `text`, `meta`, VECTOR_TO_STRING(`embedding`) AS `embedding` FROM " +
+  table +
+  clause
+}
+
+///|
+/// The vector this process scores with, read back out of a `VECTOR_TO_STRING` result. The text is a
+/// JSON array of floats (`[1.00000e+00, 2.00000e+00, 3.00000e+00]`), so parsing it is the same
+/// `@json` the metadata goes through.
+fn decode_vector_string(text : String) -> Array[Double] raise {
+  match @json.parse(text) {
+    @json.Json::Array(items) => {
+      let out : Array[Double] = []
+      for item in items {
+        match item {
+          @json.Json::Number(value, ..) => out.push(value)
+          _ =>
+            raise @moonrag.Malformed(at=3, why="vector entry is not a number")
+        }
+      }
+      out
+    }
+    _ => raise @moonrag.Malformed(at=3, why="embedding is not an array")
+  }
+}
+
+///|
+/// MySQL keeps the vectors in its native `VECTOR` column, but its Community build has no `DISTANCE`
+/// to score them with, so the cosine similarity is computed here with the same `cosine_similarity`
+/// the in-memory store uses — the ranking agrees with the other backends to the last bit. It has no
+/// server-side JSON operator either, so a filter runs in this process by the same `Filter::matches`
+/// every other store reads, and the rows come back whole to be ranked and cut here.
+async fn[T : @moondb.AsyncDriver] SqlVectorStore::search_mysql(
+  self : SqlVectorStore[T],
+  vector : ArrayView[Double],
+  limit~ : Int32,
+  filter? : @moonrag.Filter,
+) -> Array[@moonrag.Scored] {
+  let hits : Array[@moonrag.Scored] = []
+  for row in self.driver.query(mysql_search_sql(self.table_sql(), ""), []) {
+    let document = document_of_row(row)
+    if filter is Some(filter) && !filter.matches(document) {
+      continue
+    }
+    let stored = decode_vector_string(row.text(3))
+    guard stored.length() == vector.length() else {
+      raise @moonrag.Mismatch(got=stored.length(), want=vector.length())
+    }
+    hits.push({
+      document,
+      score: @moonrag.cosine_similarity(vector, stored[:]),
+    })
+  }
+  @moonrag.rank(hits, limit)
 }
 
 ///|

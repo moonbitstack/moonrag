@@ -2,59 +2,9 @@
 // database is open here: a statement is a string, and every case below is about its shape.
 
 ///|
-/// A driver that reports `dialect` and refuses every statement — enough to exercise the store's own
-/// argument checks, and nothing else.
-struct DialectStub {
-  dialect : @moondb.Dialect
-}
-
-///|
-impl @moondb.AsyncDriver for DialectStub with fn dialect(self : DialectStub) -> @moondb.Dialect {
-  self.dialect
-}
-
-///|
-impl @moondb.AsyncDriver for DialectStub with fn execute(
-  self : DialectStub,
-  sql : String,
-  params : Array[@moondb.Value],
-) -> @moondb.ExecResult raise @moondb.DbError {
-  let _ = (self, sql, params)
-  raise @moondb.DbError::QueryError("no database")
-}
-
-///|
-impl @moondb.AsyncDriver for DialectStub with fn query(
-  self : DialectStub,
-  sql : String,
-  params : Array[@moondb.Value],
-) -> Array[@moondb.Row] raise @moondb.DbError {
-  let _ = (self, sql, params)
-  raise @moondb.DbError::QueryError("no database")
-}
-
-///|
-impl @moondb.AsyncDriver for DialectStub with fn begin(self : DialectStub) -> Unit raise @moondb.DbError {
-  let _ = self
-  raise @moondb.DbError::QueryError("no database")
-}
-
-///|
-impl @moondb.AsyncDriver for DialectStub with fn commit(self : DialectStub) -> Unit raise @moondb.DbError {
-  let _ = self
-  raise @moondb.DbError::QueryError("no database")
-}
-
-///|
-impl @moondb.AsyncDriver for DialectStub with fn rollback(self : DialectStub) -> Unit raise @moondb.DbError {
-  let _ = self
-  raise @moondb.DbError::QueryError("no database")
-}
-
-///|
-impl @moondb.AsyncDriver for DialectStub with fn close(self : DialectStub) -> Unit {
-  let _ = self
-}
+/// A stand-in for a driver: only its shape is needed, since `new` checks the width and the table
+/// before any statement runs, and never touches the connection.
+struct DialectStub {}
 
 ///|
 test "the SQLite table keeps a vector as a blob and the metadata as text" {
@@ -141,14 +91,10 @@ test "an identifier is a letter or underscore and then word characters" {
 }
 
 ///|
-test "a store refuses a bad width, a bad table name, and MySQL" {
+test "a store refuses a bad width and a bad table name" {
   let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
   let width = try {
-    let _ = SqlVectorStore::new(
-      DialectStub::{ dialect: @moondb.Dialect::Sqlite, },
-      embedder,
-      dimension=0,
-    )
+    let _ = SqlVectorStore::new(DialectStub::{ }, embedder, dimension=0)
     "accepted"
   } catch {
     @moonrag.Empty(..) => "refused"
@@ -157,7 +103,7 @@ test "a store refuses a bad width, a bad table name, and MySQL" {
   assert_eq(width, "refused")
   let table = try {
     let _ = SqlVectorStore::new(
-      DialectStub::{ dialect: @moondb.Dialect::Sqlite, },
+      DialectStub::{ },
       embedder,
       dimension=8,
       table="docs; DROP TABLE users",
@@ -168,16 +114,34 @@ test "a store refuses a bad width, a bad table name, and MySQL" {
     _ => "other"
   }
   assert_eq(table, "refused")
-  let mysql = try {
-    let _ = SqlVectorStore::new(
-      DialectStub::{ dialect: @moondb.Dialect::Mysql, },
-      embedder,
-      dimension=8,
-    )
-    "accepted"
+}
+
+///|
+test "MySQL is accepted, and stores vectors in a native VECTOR column" {
+  let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
+  let accepted = try {
+    let _ = SqlVectorStore::new(DialectStub::{ }, embedder, dimension=8)
+    true
   } catch {
-    @moonrag.Unsupported(..) => "refused"
-    _ => "other"
+    _ => false
   }
-  assert_eq(mysql, "refused")
+  assert_true(accepted)
+  let sql = create_table_sql(@moondb.Dialect::Mysql, "docs", 256)
+  assert_true(sql.contains("`embedding` VECTOR(256) NOT NULL"))
+  assert_true(sql.contains("COLLATE utf8mb4_bin"))
+  assert_false(sql.contains("BLOB NOT NULL"))
+}
+
+///|
+test "the MySQL upsert writes the vector through STRING_TO_VECTOR" {
+  let mysql = upsert_sql(@moondb.Dialect::Mysql, "docs", 8)
+  assert_true(mysql.contains("VALUES (?, ?, ?, STRING_TO_VECTOR(?))"))
+  assert_true(mysql.contains("ON DUPLICATE KEY UPDATE"))
+}
+
+///|
+test "the MySQL search reads the vector back to score it here" {
+  let sql = mysql_search_sql("`docs`", "")
+  assert_true(sql.contains("VECTOR_TO_STRING(`embedding`) AS `embedding`"))
+  assert_true(sql.contains("FROM `docs`"))
 }

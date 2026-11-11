@@ -42,7 +42,7 @@ pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::create(Self[T]) -> Unit
 pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::delete(Self[T], ArrayView[String]) -> Unit
 pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::get(Self[T], String) -> @moonrag.Document?
 pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::len(Self[T]) -> Int64
-pub fn[T : @moondb.AsyncDriver] SqlVectorStore::new(T, &@moonrag.Embedder, dimension~ : Int32, table? : String) -> Self[T] raise
+pub fn[T] SqlVectorStore::new(T, &@moonrag.Embedder, dimension~ : Int32, table? : String) -> Self[T] raise
 pub async fn[T : @moondb.AsyncDriver] SqlVectorStore::search(Self[T], ArrayView[Double], limit~ : Int32, filter? : @moonrag.Filter) -> Array[@moonrag.Scored]
 pub impl[T : @moondb.AsyncDriver] @moonrag.VectorStore for SqlVectorStore[T]
 
