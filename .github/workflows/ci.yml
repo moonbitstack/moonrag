@@ -93,6 +93,18 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20
+      mysql:
+        image: mysql:9.0
+        env:
+          MYSQL_ROOT_PASSWORD: ragpass
+          MYSQL_DATABASE: moonrag
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
     steps:
       - uses: actions/checkout@v7
         with:
@@ -108,7 +120,7 @@ jobs:
           moon version --all
           moon update
 
-      - name: the vector-store standard cases run on SQLite, and on PostgreSQL with pgvector
+      - name: the vector-store standard cases run on SQLite, PostgreSQL with pgvector, and MySQL 9
         env:
           MOONRAG_LIVE: "1"
           MOONRAG_PG_HOST: 127.0.0.1
@@ -116,7 +128,12 @@ jobs:
           MOONRAG_PG_USER: postgres
           MOONRAG_PG_PASSWORD: ragpass
           MOONRAG_PG_DATABASE: moonrag
+          MOONRAG_MYSQL_HOST: 127.0.0.1
+          MOONRAG_MYSQL_PORT: "3306"
+          MOONRAG_MYSQL_USER: root
+          MOONRAG_MYSQL_PASSWORD: ragpass
+          MOONRAG_MYSQL_DATABASE: moonrag
         run: |
           cd integration
-          moon test --target native -p moonbitstack/moonrag-integration/sqlite -p moonbitstack/moonrag-integration/pgvector
+          moon test --target native -p moonbitstack/moonrag-integration/sqlite -p moonbitstack/moonrag-integration/pgvector -p moonbitstack/moonrag-integration/mysql
 
