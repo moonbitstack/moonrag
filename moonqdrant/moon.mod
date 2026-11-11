@@ -1,0 +1,18 @@
+name = "moonbitstack/moonqdrant"
+
+version = "0.1.0"
+
+license = "Apache-2.0"
+
+repository = "https://github.com/moonbitstack/moonrag"
+
+keywords = [ "moonrag", "qdrant", "vector-store", "vector-database", "moonbit" ]
+
+description = "A Qdrant vector store for moonbitstack/moonrag, over Qdrant's REST API."
+
+source = "src"
+
+import {
+  "moonbitstack/moonrag@0.1.1",
+  "moonbitlang/async@0.22.5",
+}

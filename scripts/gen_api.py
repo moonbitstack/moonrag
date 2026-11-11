@@ -49,26 +49,6 @@ PACKAGES = [
         "src/sql",
         "The same store over a table, for any driver implementing moondb's AsyncDriver. PostgreSQL with pgvector ranks in the statement; SQLite ranks in this process.",
     ),
-    (
-        "moonbitstack/moonrag/moonqdrant",
-        "src/moonqdrant",
-        "A VectorStore held in a Qdrant collection over its REST API. Native only: it opens sockets.",
-    ),
-    (
-        "moonbitstack/moonrag/moonchroma",
-        "src/moonchroma",
-        "A VectorStore held in a Chroma collection over its v2 REST API. Native only: it opens sockets.",
-    ),
-    (
-        "moonbitstack/moonrag/moonweavte",
-        "src/moonweavte",
-        "A VectorStore held in a Weaviate class over its REST API. Native only: it opens sockets.",
-    ),
-    (
-        "moonbitstack/moonrag/moonmilvus",
-        "src/moonmilvus",
-        "A VectorStore held in a Milvus collection over its v2 REST API. Native only: it opens sockets.",
-    ),
 ]
 
 DECL = re.compile(

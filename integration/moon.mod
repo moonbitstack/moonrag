@@ -34,6 +34,10 @@ import {
   "moonbitstack/moondb@0.2.8",
   "moonbitstack/moonpostgres@0.6.10",
   "moonbitstack/moonrag@0.1.1",
+  "moonbitstack/moonqdrant@0.1.0",
+  "moonbitstack/moonchroma@0.1.0",
+  "moonbitstack/moonweavte@0.1.0",
+  "moonbitstack/moonmilvus@0.1.0",
   "moonbitstack/moonsqlite@0.3.6",
   "moonbitstack/moonmysql@0.7.11",
 }

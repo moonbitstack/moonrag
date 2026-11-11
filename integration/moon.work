@@ -1,4 +1,8 @@
 members = [
   "..",
   ".",
+  "../moonqdrant",
+  "../moonchroma",
+  "../moonweavte",
+  "../moonmilvus",
 ]

@@ -2,7 +2,7 @@
 
 import {
   "moonbitstack/moonrag",
-  "moonbitstack/moonrag/moonweavte" @wstore,
+  "moonbitstack/moonweavte" @wstore,
   "moonbitstack/moonrag-integration/standard",
   "moonbitlang/async",
   "moonbitlang/core/env",
