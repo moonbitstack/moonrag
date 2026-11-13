@@ -66,9 +66,9 @@ source = "src"
 
 import {
   "moonbitlang/async@0.22.5",
-  "moonbitstack/moondb@0.2.8",
+  "moonbitstack/moondb@0.3.0",
   "moonbitstack/moonmd@0.1.1",
   "moonbitstack/moonxml@0.1.6",
-  "moonbitstack/mooncrypt@0.4.13",
-  "moonbitstack/moonbase@0.4.4",
+  "moonbitstack/mooncrypt@0.5.0",
+  "moonbitstack/moonbase@0.5.0",
 }
