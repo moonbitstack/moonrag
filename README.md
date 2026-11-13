@@ -145,13 +145,14 @@ The SQL store, in three plans:
   filter runs here too. `create` needs nothing beyond the table — there is no extension and no vector
   index. `moonmysql`'s `MysqlConn` is asynchronous and goes in as it is; CI starts a MySQL 9 container.
 
-SQLite's driver blocks: a local read returns when the row does. `BlockingDriver` presents it as the
-asynchronous driver this store is written against, so no thread is parked to wait for a file. Add
-`moonbitstack/moonsqlite` (or `moonbitstack/moonpostgres`) to the project and the store is one line:
+SQLite's driver blocks: a local read returns when the row does. `moonbitstack/moondb/blocking` presents
+a blocking driver as the asynchronous one this store is written against — the two contracts are
+method-for-method identical, so the bridge is a delegation and no thread is parked to wait for a file.
+Add `moonbitstack/moonsqlite` (or `moonbitstack/moonpostgres`) to the project and the store is one line:
 
 <!-- nocheck -->
 ```moonbit
-let driver = @sql.BlockingDriver::new(@moonsqlite.SqliteDriver::open("app.db"))
+let driver = @blocking.Blocking::new(@moonsqlite.SqliteDriver::open("app.db"))
 ```
 
 MySQL's driver is asynchronous, like PostgreSQL's:
@@ -291,7 +292,7 @@ let csv_text = "name,city\nalice,London\nbob,Paris\n"
 let documents = @moonrag.Loader::load(@load.CsvLoader::new("people.csv", csv_text))
 ```
 
-CSV follows RFC 4180: quoted fields keep delimiters, doubled quotes and newlines. JSON takes a `text_key` to say which field is prose; without one it uses `text`, and failing that writes the object out so nothing is lost.
+CSV follows RFC 4180: quoted fields keep delimiters, doubled quotes and newlines. JSON is read as RFC 8259, and a member name that appears twice is refused rather than letting the last one win — a corpus with two `id` fields is a defect in whatever exported it. A `text_key` says which field is prose; without one the loader uses `text`, and failing that writes the object out so nothing is lost.
 
 Reading from disk lives one level down, in `load/file`, because a filesystem is not something every target has. It builds for the native target; the loaders above it build everywhere:
 

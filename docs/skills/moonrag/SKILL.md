@@ -128,8 +128,9 @@ with it. `create` is `IF NOT EXISTS` throughout, so it belongs on every start. O
 pgvector the search is one statement, filter and `LIMIT` included; on SQLite and MySQL the rows come
 back and the distance is computed in this process with the same filter tree the in-memory store uses.
 
-`moonsqlite` implements the blocking driver contract, so wrap it: `@sql.BlockingDriver::new(driver)`.
-`moonpostgres`'s `PgConn` and `moonmysql`'s `MysqlConn` are both asynchronous and go in as they are.
+`moonsqlite` implements the blocking driver contract, so wrap it in `moondb`'s bridge:
+`@blocking.Blocking::new(driver)` from `moonbitstack/moondb/blocking`. `moonpostgres`'s `PgConn` and
+`moonmysql`'s `MysqlConn` are both asynchronous and go in as they are.
 MySQL 9 keeps the vectors in its native `VECTOR(n)` column (`STRING_TO_VECTOR` writes, `VECTOR_TO_STRING`
 reads); its Community build has no `DISTANCE`, so the cosine score is computed here, not in the server.
 

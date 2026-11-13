@@ -10,7 +10,7 @@ async fn fresh_store(
 ) -> &@moonrag.VectorStore raise {
   let driver = @moonsqlite.SqliteDriver::open(":memory:")
   let store = @sql.SqlVectorStore::new(
-    @sql.BlockingDriver::new(driver),
+    @blocking.Blocking::new(driver),
     embedder,
     dimension=256,
     table="moonrag_standard",
@@ -77,7 +77,7 @@ async test "the store reports what it holds, and can be emptied" {
   let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
   let driver = @moonsqlite.SqliteDriver::open(":memory:")
   let store = @sql.SqlVectorStore::new(
-    @sql.BlockingDriver::new(driver),
+    @blocking.Blocking::new(driver),
     embedder,
     dimension=256,
     table="moonrag_counts",

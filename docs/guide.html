@@ -186,12 +186,13 @@ assert_eq(chunks[1].str_meta("h2"), Some("Search"))</code></pre>
               <code>dimension</code> is the width of the embedding model, fixed at construction
               because the column is declared with it. On PostgreSQL with pgvector the search is one
               statement; on SQLite the rows come back and the cosine is computed in this process. A
-              SQLite driver that blocks goes in through <code>BlockingDriver</code>:
+              SQLite driver blocks, and <code>moondb</code>'s bridge presents it as the asynchronous
+              driver this store is written against:
             </p>
-            <pre><code>let driver = @sql.BlockingDriver::new(@moonsqlite.SqliteDriver::open("app.db"))</code></pre>
+            <pre><code>let driver = @blocking.Blocking::new(@moonsqlite.SqliteDriver::open("app.db"))</code></pre>
             <p class="caption">
-              This last line needs <code>moon add moonbitstack/moonsqlite</code>; the library itself
-              depends on no driver.
+              This last line needs <code>moon add moonbitstack/moonsqlite</code> and
+              <code>moon add moonbitstack/moondb</code>; the library itself depends on no driver.
             </p>
           </section>
 

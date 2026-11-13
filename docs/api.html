@@ -390,25 +390,6 @@
 </article>
 </section>
 <section id="sql-top"><h2>sql</h2><p>The same store over a table, for any driver implementing moondb&#x27;s AsyncDriver. PostgreSQL with pgvector ranks in the statement; SQLite ranks in this process.</p>
-<article class="api" id="sql-blockingdriver"><h3><span class="kind">struct</span>BlockingDriver</h3>
-<p>An <code>AsyncDriver</code> over a driver that blocks.  SQLite reads a local file: there is nothing to wait for, so wrapping it in an async contract costs one trait implementation and no threads. A network backend should implement <code>AsyncDriver</code> itself, where the wait is real.</p>
-<pre class="sig scroll"><code>pub struct BlockingDriver[T] {
-  inner : T
-}</code></pre>
-<div class="member" id="sql-blockingdriver-begin"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::begin(Self[T]) -&gt; Unit raise @moondb.DbError</code></pre></div>
-<div class="member" id="sql-blockingdriver-capabilities"><pre class="sig scroll"><code>pub fn[T : @moondb.Driver] BlockingDriver::capabilities(Self[T]) -&gt; @moondb.Capabilities</code></pre></div>
-<div class="member" id="sql-blockingdriver-close"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::close(Self[T]) -&gt; Unit</code></pre></div>
-<div class="member" id="sql-blockingdriver-commit"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::commit(Self[T]) -&gt; Unit raise @moondb.DbError</code></pre></div>
-<div class="member" id="sql-blockingdriver-dialect"><pre class="sig scroll"><code>pub fn[T : @moondb.Driver] BlockingDriver::dialect(Self[T]) -&gt; @moondb.Dialect</code></pre></div>
-<div class="member" id="sql-blockingdriver-execute"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::execute(Self[T], String, Array[@moondb.Value]) -&gt; @moondb.ExecResult raise @moondb.DbError</code></pre></div>
-<div class="member" id="sql-blockingdriver-inner"><pre class="sig scroll"><code>pub fn[T] BlockingDriver::inner(Self[T]) -&gt; T</code></pre><p>The driver this adapter wraps.</p></div>
-<div class="member" id="sql-blockingdriver-new"><pre class="sig scroll"><code>pub fn[T] BlockingDriver::new(T) -&gt; Self[T]</code></pre><p><code>driver</code>, presented as an asynchronous driver.</p></div>
-<div class="member" id="sql-blockingdriver-ping"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::ping(Self[T]) -&gt; Bool</code></pre></div>
-<div class="member" id="sql-blockingdriver-prepare"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::prepare(Self[T], String) -&gt; &amp;@moondb.AsyncStmt raise @moondb.DbError</code></pre></div>
-<div class="member" id="sql-blockingdriver-query"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::query(Self[T], String, Array[@moondb.Value]) -&gt; Array[@moondb.Row] raise @moondb.DbError</code></pre></div>
-<div class="member" id="sql-blockingdriver-query_stream"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::query_stream(Self[T], String, Array[@moondb.Value]) -&gt; &amp;@moondb.AsyncCursor raise @moondb.DbError</code></pre></div>
-<div class="member" id="sql-blockingdriver-rollback"><pre class="sig scroll"><code>pub async fn[T : @moondb.Driver] BlockingDriver::rollback(Self[T]) -&gt; Unit raise @moondb.DbError</code></pre></div>
-</article>
 <article class="api" id="sql-sqlvectorstore"><h3><span class="kind">struct</span>SqlVectorStore</h3>
 <p>A <code>VectorStore</code> held in a SQL table, over any driver implementing <code>moondb</code>&#x27;s <code>AsyncDriver</code>.  <code>dimension</code> is the width of the vectors this store holds, fixed when it is constructed because the column has to be declared with it. <code>table</code> is the name to keep rows in; it must be a plain identifier, since it is written into the statement rather than bound as a value.  Raises <code>Empty</code> when <code>dimension</code> is not positive and <code>Malformed</code> when <code>table</code> is not an identifier.</p>
 <pre class="sig scroll"><code>pub struct SqlVectorStore[T] {
@@ -480,7 +461,6 @@
 <a href="#index-stats">Stats</a>
 </div>
 <div class="group"><b>sql</b>
-<a href="#sql-blockingdriver">BlockingDriver</a>
 <a href="#sql-sqlvectorstore">SqlVectorStore</a>
 </div>
             </div>
