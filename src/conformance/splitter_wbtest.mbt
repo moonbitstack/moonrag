@@ -53,3 +53,23 @@ test "the corpus covers every separator level" {
     "long-word",
   ])
 }
+
+///|
+/// The same corpus through a second implementation: LangChain's JavaScript splitter, over the
+/// configuration it offers. Two projects agreeing on where every chunk ends is what makes these
+/// fixtures evidence rather than one library's opinion.
+test "the recursive splitter matches the second implementation case for case" {
+  for case in js_split_cases() {
+    let splitter = @split.RecursiveSplitter::new(
+      chunk_size=case.chunk_size,
+      chunk_overlap=case.chunk_overlap,
+    )
+    let got = splitter.split_text(case.text)
+    if got != case.expected {
+      let label = "\{case.name} size=\{case.chunk_size} overlap=\{case.chunk_overlap}"
+      abort(
+        "javascript splitter case \{label}: \{first_difference(got, case.expected)}",
+      )
+    }
+  }
+}
