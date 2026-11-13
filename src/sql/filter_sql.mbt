@@ -37,7 +37,7 @@ fn filter_sql(filter : @moonrag.Filter, binder : Binder) -> String raise {
   match filter {
     @moonrag.Filter::Equal(key, want) => {
       let at = binder.bind(@moondb.Value::Text(key))
-      let value = binder.bind(@moondb.Value::Json(want.stringify()))
+      let value = binder.bind(@moondb.Value::Json(@moonjson.dumps(want)))
       "(" + meta_column() + " -> " + at + ") = " + value + "::jsonb"
     }
     @moonrag.Filter::OneOf(key, wants) => {
@@ -47,7 +47,7 @@ fn filter_sql(filter : @moonrag.Filter, binder : Binder) -> String raise {
       let at = binder.bind(@moondb.Value::Text(key))
       let parts : Array[String] = []
       for want in wants {
-        let value = binder.bind(@moondb.Value::Json(want.stringify()))
+        let value = binder.bind(@moondb.Value::Json(@moonjson.dumps(want)))
         parts.push(value + "::jsonb")
       }
       "(" + meta_column() + " -> " + at + ") IN (" + parts.join(", ") + ")"

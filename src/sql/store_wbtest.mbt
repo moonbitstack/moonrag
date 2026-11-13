@@ -145,3 +145,112 @@ test "the MySQL search reads the vector back to score it here" {
   assert_true(sql.contains("VECTOR_TO_STRING(`embedding`) AS `embedding`"))
   assert_true(sql.contains("FROM `docs`"))
 }
+
+///|
+/// A row as a driver hands one back: `id`, `text`, `meta`, in projection order.
+fn row_of(id : String, text : String, meta : String) -> @moondb.Row {
+  {
+    columns: ["id", "text", "meta"],
+    values: [
+      @moondb.Value::Text(id),
+      @moondb.Value::Text(text),
+      @moondb.Value::Text(meta),
+    ],
+  }
+}
+
+///|
+test "a row becomes a document, its metadata read out of the text column" {
+  let document = document_of_row(
+    row_of(
+      "harbour", "the harbour at dawn", "{\"topic\":\"sea\",\"year\":2024}",
+    ),
+  )
+  assert_eq(document.id, Some("harbour"))
+  assert_eq(document.text, "the harbour at dawn")
+  assert_eq(document.str_meta("topic"), Some("sea"))
+  assert_eq(document.meta_of("year"), Some(@json.Json::number(2024.0)))
+}
+
+///|
+test "metadata stored as jsonb is read the same way as metadata stored as text" {
+  let row : @moondb.Row = {
+    columns: ["id", "text", "meta"],
+    values: [
+      @moondb.Value::Text("ridge"),
+      @moondb.Value::Text("a mountain path in autumn"),
+      @moondb.Value::Json("{\"topic\":\"land\"}"),
+    ],
+  }
+  let document = document_of_row(row)
+  assert_eq(document.str_meta("topic"), Some("land"))
+}
+
+///|
+test "metadata that is not JSON names the column it came from" {
+  let refused = try {
+    let _ = document_of_row(row_of("bad", "text", "{not json"))
+    "accepted"
+  } catch {
+    @moonrag.Malformed(at~, ..) => "at " + at.to_string()
+    _ => "other"
+  }
+  assert_eq(refused, "at 2")
+}
+
+///|
+test "metadata that is JSON but not an object is refused" {
+  let refused = try {
+    let _ = document_of_row(row_of("bad", "text", "[1, 2]"))
+    "accepted"
+  } catch {
+    @moonrag.Malformed(at=0, ..) => "not an object"
+    _ => "other"
+  }
+  assert_eq(refused, "not an object")
+}
+
+///|
+test "the metadata a document is stored as is the same text the reader reads back" {
+  let document = @moonrag.Document::new(
+    "text",
+    meta=Map([
+      ("topic", @json.Json::string("sea")),
+      ("note", @json.Json::string("浪")),
+    ]),
+  )
+  let round_trip = document_of_row(
+    row_of("id", document.text, meta_json(document)),
+  )
+  assert_eq(round_trip.meta_of("topic"), document.meta_of("topic"))
+  assert_eq(round_trip.str_meta("note"), Some("浪"))
+}
+
+///|
+test "MySQL's text form of a vector is read back into the numbers it holds" {
+  let vector = decode_vector_string("[1.00000e+00, 2.50000e+00, -3.00000e+00]")
+  assert_eq(vector.length(), 3)
+  assert_eq(vector[0], 1.0)
+  assert_eq(vector[1], 2.5)
+  assert_eq(vector[2], -3.0)
+}
+
+///|
+test "a vector column that is not an array of numbers is refused" {
+  let not_a_number = try {
+    let _ = decode_vector_string("[1, \"two\"]")
+    "accepted"
+  } catch {
+    @moonrag.Malformed(at=3, ..) => "not a number"
+    _ => "other"
+  }
+  assert_eq(not_a_number, "not a number")
+  let not_an_array = try {
+    let _ = decode_vector_string("{\"x\":1}")
+    "accepted"
+  } catch {
+    @moonrag.Malformed(at=3, ..) => "not an array"
+    _ => "other"
+  }
+  assert_eq(not_an_array, "not an array")
+}

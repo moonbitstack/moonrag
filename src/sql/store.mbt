@@ -241,7 +241,18 @@ fn upsert_sql(
 ///|
 /// The JSON a document's metadata is stored as.
 fn meta_json(document : @moonrag.Document) -> String {
-  @json.Json::object(document.meta.copy()).stringify()
+  @moonjson.dumps(@json.Json::object(document.meta.copy()))
+}
+
+///|
+/// The JSON a column holds, read with the same reader the loaders use. A column that is not JSON is
+/// this library's error rather than the reader's: the caller asked for a document, and `at` names the
+/// column it came from.
+fn stored_json(text : String, at : Int32) -> @json.Json raise {
+  @moonjson.loads(text[:], @moonjson.strict) catch {
+    (refused : @moonjson.Refused) =>
+      raise @moonrag.Malformed(at~, why=refused.message())
+  }
 }
 
 ///|
@@ -251,7 +262,7 @@ fn document_of_row(row : @moondb.Row) -> @moonrag.Document raise {
   let text = row.text(1)
   let meta = match row.get(2) {
     @moondb.Value::Text(text) | @moondb.Value::Json(text) =>
-      match @json.parse(text) {
+      match stored_json(text, 2) {
         @json.Json::Object(fields) => fields
         _ => raise @moonrag.Malformed(at=0, why="metadata is not an object")
       }
@@ -473,10 +484,10 @@ fn mysql_search_sql(table : String, clause : String) -> String {
 
 ///|
 /// The vector this process scores with, read back out of a `VECTOR_TO_STRING` result. The text is a
-/// JSON array of floats (`[1.00000e+00, 2.00000e+00, 3.00000e+00]`), so parsing it is the same
-/// `@json` the metadata goes through.
+/// JSON array of floats (`[1.00000e+00, 2.00000e+00, 3.00000e+00]`), so it is read by the same
+/// reader the metadata goes through.
 fn decode_vector_string(text : String) -> Array[Double] raise {
-  match @json.parse(text) {
+  match stored_json(text, 3) {
     @json.Json::Array(items) => {
       let out : Array[Double] = []
       for item in items {

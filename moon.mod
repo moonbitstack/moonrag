@@ -71,4 +71,5 @@ import {
   "moonbitstack/moonxml@0.1.6",
   "moonbitstack/mooncrypt@0.5.0",
   "moonbitstack/moonbase@0.5.0",
+  "moonbitstack/moonjson@0.5.0",
 }

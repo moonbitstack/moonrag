@@ -4,6 +4,7 @@
 import {
   "moonbitstack/moonrag",
   "moonbitstack/moondb",
+  "moonbitstack/moonjson",
   "moonbitlang/core/json",
   "moonbitlang/core/buffer",
 }

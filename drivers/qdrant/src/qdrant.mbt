@@ -186,18 +186,19 @@ fn document_of_point(point : @json.Json) -> (@moonrag.Document, Array[Double]) {
 /// the same shape is left as it is.
 pub async fn QdrantStore::create(self : QdrantStore) -> Unit {
   let body = @json.Json::object(
-    Map([
-      (
-        "vectors",
-        @json.Json::object(
-          Map([
-            ("size", @json.Json::number(self.dimension.to_double())),
-            ("distance", @json.Json::string("Cosine")),
-          ]),
+      Map([
+        (
+          "vectors",
+          @json.Json::object(
+            Map([
+              ("size", @json.Json::number(self.dimension.to_double())),
+              ("distance", @json.Json::string("Cosine")),
+            ]),
+          ),
         ),
-      ),
-    ]),
-  ).stringify()
+      ]),
+    )
+    |> @moonjson.dumps
   let (code, _text) = call(@http.RequestMethod::Put, self.url(""), body)
   guard (code >= 200 && code < 300) || code == 409 else {
     raise @moonrag.Malformed(at=0, why="qdrant create: " + code.to_string())
@@ -214,7 +215,8 @@ pub async fn QdrantStore::clear(self : QdrantStore) -> Unit {
 ///|
 /// The number of stored points.
 pub async fn QdrantStore::len(self : QdrantStore) -> Int64 {
-  let body = @json.Json::object(Map([("exact", @json.Json::boolean(true))])).stringify()
+  let body = @json.Json::object(Map([("exact", @json.Json::boolean(true))]))
+    |> @moonjson.dumps
   let (code, text) = call(
     @http.RequestMethod::Post,
     self.url("/points/count"),
@@ -223,7 +225,7 @@ pub async fn QdrantStore::len(self : QdrantStore) -> Int64 {
   guard code >= 200 && code < 300 else {
     raise @moonrag.Malformed(at=0, why="qdrant count: " + code.to_string())
   }
-  let count = match @json.parse(text) {
+  let count = match @moonjson.loads(text[:], @moonjson.strict) {
     @json.Json::Object(root) =>
       match root.get("result") {
         Some(@json.Json::Object(result)) =>
@@ -257,7 +259,8 @@ pub impl @moonrag.VectorStore for QdrantStore with fn add(self, documents) {
     ids.push(id)
     points.push(point_json(id, document, vectors[i]))
   }
-  let body = @json.Json::object(Map([("points", @json.Json::array(points))])).stringify()
+  let body = @json.Json::object(Map([("points", @json.Json::array(points))]))
+    |> @moonjson.dumps
   let (code, _text) = call(
     @http.RequestMethod::Put,
     self.url("/points?wait=true"),
@@ -279,7 +282,8 @@ pub impl @moonrag.VectorStore for QdrantStore with fn delete(self, ids) {
   for id in ids {
     points.push(id_json(id))
   }
-  let body = @json.Json::object(Map([("points", @json.Json::array(points))])).stringify()
+  let body = @json.Json::object(Map([("points", @json.Json::array(points))]))
+    |> @moonjson.dumps
   let _ = call(
     @http.RequestMethod::Post,
     self.url("/points/delete?wait=true"),
@@ -303,12 +307,13 @@ pub impl @moonrag.VectorStore for QdrantStore with fn search(
     return []
   }
   let body = @json.Json::object(
-    Map([
-      ("limit", @json.Json::number(10000.0)),
-      ("with_payload", @json.Json::boolean(true)),
-      ("with_vector", @json.Json::boolean(true)),
-    ]),
-  ).stringify()
+      Map([
+        ("limit", @json.Json::number(10000.0)),
+        ("with_payload", @json.Json::boolean(true)),
+        ("with_vector", @json.Json::boolean(true)),
+      ]),
+    )
+    |> @moonjson.dumps
   let (code, text) = call(
     @http.RequestMethod::Post,
     self.url("/points/scroll"),
@@ -317,7 +322,8 @@ pub impl @moonrag.VectorStore for QdrantStore with fn search(
   guard code >= 200 && code < 300 else {
     raise @moonrag.Malformed(at=0, why="qdrant scroll: " + code.to_string())
   }
-  let points : Array[@json.Json] = match @json.parse(text) {
+  let points : Array[@json.Json] = match
+    @moonjson.loads(text[:], @moonjson.strict) {
     @json.Json::Object(root) =>
       match root.get("result") {
         Some(@json.Json::Object(result)) =>

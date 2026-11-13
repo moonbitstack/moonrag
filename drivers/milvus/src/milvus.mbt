@@ -119,7 +119,7 @@ priv struct MilvusRow {
 /// The rows in `data` of a query response, decoded.
 fn rows_of(body : String) -> Array[MilvusRow] raise {
   let out : Array[MilvusRow] = []
-  let root = match @json.parse(body) {
+  let root = match @moonjson.loads(body[:], @moonjson.strict) {
     @json.Json::Object(fields) => fields
     _ => Map([])
   }
@@ -142,7 +142,7 @@ fn rows_of(body : String) -> Array[MilvusRow] raise {
     }
     let meta = match row.get("meta") {
       Some(@json.Json::String(raw)) =>
-        match @json.parse(raw) {
+        match @moonjson.loads(raw[:], @moonjson.strict) {
           @json.Json::Object(fields) => fields
           _ => Map([])
         }
@@ -173,14 +173,15 @@ async fn MilvusStore::rows_with(
   fields : Array[@json.Json],
 ) -> Array[MilvusRow] {
   let body = @json.Json::object(
-    Map([
-      ("collectionName", @json.Json::string(self.collection)),
-      ("filter", @json.Json::string(filter)),
-      ("outputFields", @json.Json::array(fields)),
-      ("limit", @json.Json::number(10000.0)),
-      ("consistencyLevel", @json.Json::string("Strong")),
-    ]),
-  ).stringify()
+      Map([
+        ("collectionName", @json.Json::string(self.collection)),
+        ("filter", @json.Json::string(filter)),
+        ("outputFields", @json.Json::array(fields)),
+        ("limit", @json.Json::number(10000.0)),
+        ("consistencyLevel", @json.Json::string("Strong")),
+      ]),
+    )
+    |> @moonjson.dumps
   let (code, text) = call(
     @http.RequestMethod::Post,
     self.base + "/v2/vectordb/entities/query",
@@ -208,95 +209,96 @@ async fn MilvusStore::ids_where(
 /// Create the collection (tolerating one that already exists) and load it for querying.
 pub async fn MilvusStore::create(self : MilvusStore) -> Unit {
   let body = @json.Json::object(
-    Map([
-      ("collectionName", @json.Json::string(self.collection)),
-      (
-        "schema",
-        @json.Json::object(
-          Map([
-            ("autoId", @json.Json::boolean(false)),
-            (
-              "fields",
-              @json.Json::array([
-                @json.Json::object(
-                  Map([
-                    ("fieldName", @json.Json::string("id")),
-                    ("dataType", @json.Json::string("VarChar")),
-                    ("isPrimary", @json.Json::boolean(true)),
-                    (
-                      "elementTypeParams",
-                      @json.Json::object(
-                        Map([("max_length", @json.Json::number(65535.0))]),
+      Map([
+        ("collectionName", @json.Json::string(self.collection)),
+        (
+          "schema",
+          @json.Json::object(
+            Map([
+              ("autoId", @json.Json::boolean(false)),
+              (
+                "fields",
+                @json.Json::array([
+                  @json.Json::object(
+                    Map([
+                      ("fieldName", @json.Json::string("id")),
+                      ("dataType", @json.Json::string("VarChar")),
+                      ("isPrimary", @json.Json::boolean(true)),
+                      (
+                        "elementTypeParams",
+                        @json.Json::object(
+                          Map([("max_length", @json.Json::number(65535.0))]),
+                        ),
                       ),
-                    ),
-                  ]),
-                ),
-                @json.Json::object(
-                  Map([
-                    ("fieldName", @json.Json::string("vector")),
-                    ("dataType", @json.Json::string("FloatVector")),
-                    (
-                      "elementTypeParams",
-                      @json.Json::object(
-                        Map([
-                          (
-                            "dim",
-                            @json.Json::number(self.dimension.to_double()),
-                          ),
-                        ]),
+                    ]),
+                  ),
+                  @json.Json::object(
+                    Map([
+                      ("fieldName", @json.Json::string("vector")),
+                      ("dataType", @json.Json::string("FloatVector")),
+                      (
+                        "elementTypeParams",
+                        @json.Json::object(
+                          Map([
+                            (
+                              "dim",
+                              @json.Json::number(self.dimension.to_double()),
+                            ),
+                          ]),
+                        ),
                       ),
-                    ),
-                  ]),
-                ),
-                @json.Json::object(
-                  Map([
-                    ("fieldName", @json.Json::string("text")),
-                    ("dataType", @json.Json::string("VarChar")),
-                    (
-                      "elementTypeParams",
-                      @json.Json::object(
-                        Map([("max_length", @json.Json::number(65535.0))]),
+                    ]),
+                  ),
+                  @json.Json::object(
+                    Map([
+                      ("fieldName", @json.Json::string("text")),
+                      ("dataType", @json.Json::string("VarChar")),
+                      (
+                        "elementTypeParams",
+                        @json.Json::object(
+                          Map([("max_length", @json.Json::number(65535.0))]),
+                        ),
                       ),
-                    ),
-                  ]),
-                ),
-                @json.Json::object(
-                  Map([
-                    ("fieldName", @json.Json::string("meta")),
-                    ("dataType", @json.Json::string("VarChar")),
-                    (
-                      "elementTypeParams",
-                      @json.Json::object(
-                        Map([("max_length", @json.Json::number(65535.0))]),
+                    ]),
+                  ),
+                  @json.Json::object(
+                    Map([
+                      ("fieldName", @json.Json::string("meta")),
+                      ("dataType", @json.Json::string("VarChar")),
+                      (
+                        "elementTypeParams",
+                        @json.Json::object(
+                          Map([("max_length", @json.Json::number(65535.0))]),
+                        ),
                       ),
-                    ),
-                  ]),
+                    ]),
+                  ),
+                ]),
+              ),
+            ]),
+          ),
+        ),
+        (
+          "indexParams",
+          @json.Json::array([
+            @json.Json::object(
+              Map([
+                ("metricType", @json.Json::string("COSINE")),
+                ("fieldName", @json.Json::string("vector")),
+                ("indexName", @json.Json::string("vector")),
+                (
+                  "params",
+                  @json.Json::object(
+                    Map([("index_type", @json.Json::string("AUTOINDEX"))]),
+                  ),
                 ),
               ]),
             ),
           ]),
         ),
-      ),
-      (
-        "indexParams",
-        @json.Json::array([
-          @json.Json::object(
-            Map([
-              ("metricType", @json.Json::string("COSINE")),
-              ("fieldName", @json.Json::string("vector")),
-              ("indexName", @json.Json::string("vector")),
-              (
-                "params",
-                @json.Json::object(
-                  Map([("index_type", @json.Json::string("AUTOINDEX"))]),
-                ),
-              ),
-            ]),
-          ),
-        ]),
-      ),
-    ]),
-  ).stringify()
+      ]),
+    )
+    |> @moonjson.dumps
   // A collection that already exists answers with an error, which is fine here.
   let _ = call(
     @http.RequestMethod::Post,
@@ -304,8 +306,9 @@ pub async fn MilvusStore::create(self : MilvusStore) -> Unit {
     body,
   )
   let load = @json.Json::object(
-    Map([("collectionName", @json.Json::string(self.collection))]),
-  ).stringify()
+      Map([("collectionName", @json.Json::string(self.collection))]),
+    )
+    |> @moonjson.dumps
   let (code, text) = call(
     @http.RequestMethod::Post,
     self.base + "/v2/vectordb/collections/load",
@@ -332,22 +335,23 @@ pub async fn MilvusStore::clear(self : MilvusStore) -> Unit {
 /// The rows in the collection, with their vectors.
 async fn MilvusStore::all_rows(self : MilvusStore) -> Array[MilvusRow] {
   let body = @json.Json::object(
-    Map([
-      ("collectionName", @json.Json::string(self.collection)),
-      ("filter", @json.Json::string("")),
-      (
-        "outputFields",
-        @json.Json::array([
-          @json.Json::string("id"),
-          @json.Json::string("text"),
-          @json.Json::string("meta"),
-          @json.Json::string("vector"),
-        ]),
-      ),
-      ("limit", @json.Json::number(10000.0)),
-      ("consistencyLevel", @json.Json::string("Strong")),
-    ]),
-  ).stringify()
+      Map([
+        ("collectionName", @json.Json::string(self.collection)),
+        ("filter", @json.Json::string("")),
+        (
+          "outputFields",
+          @json.Json::array([
+            @json.Json::string("id"),
+            @json.Json::string("text"),
+            @json.Json::string("meta"),
+            @json.Json::string("vector"),
+          ]),
+        ),
+        ("limit", @json.Json::number(10000.0)),
+        ("consistencyLevel", @json.Json::string("Strong")),
+      ]),
+    )
+    |> @moonjson.dumps
   let (code, text) = call(
     @http.RequestMethod::Post,
     self.base + "/v2/vectordb/entities/query",
@@ -363,13 +367,14 @@ async fn MilvusStore::all_rows(self : MilvusStore) -> Array[MilvusRow] {
 /// The number of stored rows.
 pub async fn MilvusStore::len(self : MilvusStore) -> Int64 {
   let body = @json.Json::object(
-    Map([
-      ("collectionName", @json.Json::string(self.collection)),
-      ("filter", @json.Json::string("")),
-      ("outputFields", @json.Json::array([@json.Json::string("count(*)")])),
-      ("consistencyLevel", @json.Json::string("Strong")),
-    ]),
-  ).stringify()
+      Map([
+        ("collectionName", @json.Json::string(self.collection)),
+        ("filter", @json.Json::string("")),
+        ("outputFields", @json.Json::array([@json.Json::string("count(*)")])),
+        ("consistencyLevel", @json.Json::string("Strong")),
+      ]),
+    )
+    |> @moonjson.dumps
   let (code, text) = call(
     @http.RequestMethod::Post,
     self.base + "/v2/vectordb/entities/query",
@@ -378,7 +383,7 @@ pub async fn MilvusStore::len(self : MilvusStore) -> Int64 {
   guard code >= 200 && code < 300 else {
     raise @moonrag.Malformed(at=0, why="milvus count: " + code.to_string())
   }
-  match @json.parse(text) {
+  match @moonjson.loads(text[:], @moonjson.strict) {
     @json.Json::Object(fields) =>
       match fields.get("data") {
         Some(@json.Json::Array(items)) =>
@@ -406,11 +411,12 @@ async fn MilvusStore::delete_rows(
     return
   }
   let body = @json.Json::object(
-    Map([
-      ("collectionName", @json.Json::string(self.collection)),
-      ("filter", @json.Json::string(id_filter(ids[:]))),
-    ]),
-  ).stringify()
+      Map([
+        ("collectionName", @json.Json::string(self.collection)),
+        ("filter", @json.Json::string(id_filter(ids[:]))),
+      ]),
+    )
+    |> @moonjson.dumps
   let _ = call(
     @http.RequestMethod::Post,
     self.base + "/v2/vectordb/entities/delete",
@@ -493,7 +499,7 @@ pub impl @moonrag.VectorStore for MilvusStore with fn add(self, documents) {
           (
             "meta",
             @json.Json::string(
-              @json.Json::object(document.meta.copy()).stringify(),
+              @json.Json::object(document.meta.copy()) |> @moonjson.dumps,
             ),
           ),
         ]),
@@ -501,11 +507,12 @@ pub impl @moonrag.VectorStore for MilvusStore with fn add(self, documents) {
     )
   }
   let body = @json.Json::object(
-    Map([
-      ("collectionName", @json.Json::string(self.collection)),
-      ("data", @json.Json::array(data)),
-    ]),
-  ).stringify()
+      Map([
+        ("collectionName", @json.Json::string(self.collection)),
+        ("data", @json.Json::array(data)),
+      ]),
+    )
+    |> @moonjson.dumps
   let (code, text) = call(
     @http.RequestMethod::Post,
     self.base + "/v2/vectordb/entities/upsert",

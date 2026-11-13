@@ -40,12 +40,12 @@ fn document_of(
         Some(key) => Some(key)
         None => if fields.get("text") is Some(_) { Some("text") } else { None }
       }
-      let mut text = json.stringify()
+      let mut text = @moonjson.dumps(json)
       match key {
         Some(key) =>
           match fields.get(key) {
             Some(@json.Json::String(value)) => text = value
-            Some(value) => text = value.stringify()
+            Some(value) => text = @moonjson.dumps(value)
             None => ()
           }
         None => ()
@@ -58,68 +58,37 @@ fn document_of(
       }
       @moonrag.Document::new(text, meta~)
     }
-    _ => @moonrag.Document::new(json.stringify(), meta~)
+    _ => @moonrag.Document::new(@moonjson.dumps(json), meta~)
   }
 }
 
 ///|
-/// The offset of the line and column a parse error named, so the error type stays in offsets.
-fn offset_of(text : String, line : Int32, column : Int32) -> Int32 {
-  let mut current_line = 1
-  let mut index = 0
-  for char in text {
-    if current_line >= line {
-      break
-    }
-    if char == '\n' {
-      current_line = current_line + 1
-    }
-    index = index + 1
+/// What a corpus is read with: RFC 8259, and a repeated member name refused.
+///
+/// A JSON export that writes `"id"` twice has a defect in the exporting program, and last-one-wins —
+/// the reader's default — would store half the object without a word. The loader is where a corpus
+/// enters, so it is the place to say so.
+let corpus_flavor : @moonjson.Flavor = {
+  ..@moonjson.strict,
+  duplicates: @moonjson.Reject,
+}
+
+///|
+/// A refusal from the JSON reader, in this library's error family: the offset the reader stopped at,
+/// and the sentence it would have printed. Keeping the reader's own wording means the reason names the
+/// character or the missing bracket, which a hand-written mapping would either lose or guess at.
+fn malformed_of(refused : @moonjson.Refused) -> @moonrag.Refused {
+  let at = match refused.at() {
+    Some(position) => position.at
+    None => 0
   }
-  if current_line < line {
-    return text.length()
-  }
-  let start = index
-  let mut offset = start
-  for i = start; i < text.length(); i = i + 1 {
-    if offset - start >= column - 1 {
-      break
-    }
-    offset = offset + 1
-  }
-  offset
+  @moonrag.Malformed(at~, why=refused.message())
 }
 
 ///|
 pub impl @moonrag.Loader for JsonLoader with fn load(self) {
-  let json = @json.parse(self.text) catch {
-    @json.ParseError::InvalidChar(position, char) =>
-      raise @moonrag.Malformed(
-        at=offset_of(self.text, position.line, position.column),
-        why="invalid character \{char}",
-      )
-    @json.ParseError::InvalidEof =>
-      raise @moonrag.Malformed(
-        at=self.text.length(),
-        why="unexpected end of input",
-      )
-    @json.ParseError::InvalidNumber(position, text) =>
-      raise @moonrag.Malformed(
-        at=offset_of(self.text, position.line, position.column),
-        why="invalid number \{text}",
-      )
-    @json.ParseError::InvalidIdentEscape(position) =>
-      raise @moonrag.Malformed(
-        at=offset_of(self.text, position.line, position.column),
-        why="invalid escape",
-      )
-    @json.ParseError::DuplicateKey(position, key) =>
-      raise @moonrag.Malformed(
-        at=offset_of(self.text, position.line, position.column),
-        why="duplicate key \{key}",
-      )
-    @json.ParseError::DepthLimitExceeded =>
-      raise @moonrag.Malformed(at=0, why="nesting too deep")
+  let json = @moonjson.loads(self.text[:], corpus_flavor) catch {
+    (refused : @moonjson.Refused) => raise malformed_of(refused)
   }
   match json {
     @json.Json::Array(items) =>

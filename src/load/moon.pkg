@@ -3,6 +3,7 @@
 import {
   "moonbitstack/moonrag",
   "moonbitstack/moonrag/split",
+  "moonbitstack/moonjson",
   "moonbitlang/core/json",
 }
 

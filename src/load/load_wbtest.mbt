@@ -136,3 +136,72 @@ async test "html: readable text and the page title" {
   assert_true(documents[0].text.contains("One & two."))
   assert_true(!documents[0].text.contains("bad()"))
 }
+
+///|
+async test "json: a second value after the first is refused, not silently dropped" {
+  let refused = try {
+    let _ = @moonrag.Loader::load(
+      JsonLoader::new("two.json", "{\"a\":1} {\"b\":2}"),
+    )
+    "accepted"
+  } catch {
+    @moonrag.Refused::Malformed(at~, ..) => "at " + at.to_string()
+    _ => "other"
+  }
+  assert_eq(refused, "at 8")
+}
+
+///|
+async test "json: a repeated key is refused and the reason names it" {
+  let refused = try {
+    let _ = @moonrag.Loader::load(
+      JsonLoader::new("repeat.json", "{\"a\":1,\"a\":2}"),
+    )
+    "accepted"
+  } catch {
+    @moonrag.Refused::Malformed(why~, ..) =>
+      if why.contains("a") {
+        "named"
+      } else {
+        why
+      }
+    _ => "other"
+  }
+  assert_eq(refused, "named")
+}
+
+///|
+async test "json: text that does not finish is refused at the end" {
+  let refused = try {
+    let _ = @moonrag.Loader::load(JsonLoader::new("cut.json", "{\"a\": [1, 2"))
+    "accepted"
+  } catch {
+    @moonrag.Refused::Malformed(at~, ..) => "at " + at.to_string()
+    _ => "other"
+  }
+  assert_eq(refused, "at 11")
+}
+
+///|
+async test "json: an object written back as text keeps non-ASCII as it is" {
+  let documents = @moonrag.Loader::load(
+    JsonLoader::new("zh.json", "{\"note\":\"浪\",\"n\":1}"),
+  )
+  assert_eq(documents.length(), 1)
+  assert_true(documents[0].text.contains("浪"))
+  assert_eq(documents[0].str_meta("note"), Some("浪"))
+}
+
+///|
+async test "json: a text key holding an object is written as JSON in the prose" {
+  let documents = @moonrag.Loader::load(
+    JsonLoader::new(
+      "nested.json",
+      "{\"body\":{\"a\":1},\"tag\":\"x\"}",
+      text_key="body",
+    ),
+  )
+  assert_eq(documents[0].text, "{\"a\":1}")
+  assert_eq(documents[0].str_meta("tag"), Some("x"))
+  assert_eq(documents[0].meta_of("body"), None)
+}

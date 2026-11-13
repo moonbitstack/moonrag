@@ -120,34 +120,35 @@ fn WeaviateStore::assign_id(
 /// not an error here.
 pub async fn WeaviateStore::create(self : WeaviateStore) -> Unit {
   let body = @json.Json::object(
-    Map([
-      ("class", @json.Json::string(self.class_name)),
-      ("vectorizer", @json.Json::string("none")),
-      (
-        "properties",
-        @json.Json::array([
-          @json.Json::object(
-            Map([
-              ("name", @json.Json::string("docid")),
-              ("dataType", @json.Json::array([@json.Json::string("text")])),
-            ]),
-          ),
-          @json.Json::object(
-            Map([
-              ("name", @json.Json::string("body")),
-              ("dataType", @json.Json::array([@json.Json::string("text")])),
-            ]),
-          ),
-          @json.Json::object(
-            Map([
-              ("name", @json.Json::string("meta")),
-              ("dataType", @json.Json::array([@json.Json::string("text")])),
-            ]),
-          ),
-        ]),
-      ),
-    ]),
-  ).stringify()
+      Map([
+        ("class", @json.Json::string(self.class_name)),
+        ("vectorizer", @json.Json::string("none")),
+        (
+          "properties",
+          @json.Json::array([
+            @json.Json::object(
+              Map([
+                ("name", @json.Json::string("docid")),
+                ("dataType", @json.Json::array([@json.Json::string("text")])),
+              ]),
+            ),
+            @json.Json::object(
+              Map([
+                ("name", @json.Json::string("body")),
+                ("dataType", @json.Json::array([@json.Json::string("text")])),
+              ]),
+            ),
+            @json.Json::object(
+              Map([
+                ("name", @json.Json::string("meta")),
+                ("dataType", @json.Json::array([@json.Json::string("text")])),
+              ]),
+            ),
+          ]),
+        ),
+      ]),
+    )
+    |> @moonjson.dumps
   let (code, _text) = call(
     @http.RequestMethod::Post,
     self.base + "/v1/schema",
@@ -197,7 +198,7 @@ async fn WeaviateStore::all_objects(
     raise @moonrag.Malformed(at=0, why="weaviate objects: " + code.to_string())
   }
   let out : Array[WeaviateObject] = []
-  let root = match @json.parse(text) {
+  let root = match @moonjson.loads(text[:], @moonjson.strict) {
     @json.Json::Object(fields) => fields
     _ => Map([])
   }
@@ -228,7 +229,7 @@ async fn WeaviateStore::all_objects(
     }
     let meta = match properties.get("meta") {
       Some(@json.Json::String(raw)) =>
-        match @json.parse(raw) {
+        match @moonjson.loads(raw[:], @moonjson.strict) {
           @json.Json::Object(fields) => fields
           _ => Map([])
         }
@@ -262,7 +263,7 @@ pub async fn WeaviateStore::len(self : WeaviateStore) -> Int64 {
   guard code >= 200 && code < 300 else {
     raise @moonrag.Malformed(at=0, why="weaviate count: " + code.to_string())
   }
-  match @json.parse(text) {
+  match @moonjson.loads(text[:], @moonjson.strict) {
     @json.Json::Object(fields) =>
       match fields.get("totalResults") {
         Some(@json.Json::Number(n, ..)) => n.to_int64()
@@ -299,24 +300,25 @@ pub impl @moonrag.VectorStore for WeaviateStore with fn add(self, documents) {
     for x in vectors[i] {
       coordinates.push(@json.Json::number(x))
     }
-    let meta_text = @json.Json::object(document.meta.copy()).stringify()
+    let meta_text = @json.Json::object(document.meta.copy()) |> @moonjson.dumps
     let body = @json.Json::object(
-      Map([
-        ("class", @json.Json::string(self.class_name)),
-        ("id", @json.Json::string(uuid)),
-        (
-          "properties",
-          @json.Json::object(
-            Map([
-              ("docid", @json.Json::string(id)),
-              ("body", @json.Json::string(document.text)),
-              ("meta", @json.Json::string(meta_text)),
-            ]),
+        Map([
+          ("class", @json.Json::string(self.class_name)),
+          ("id", @json.Json::string(uuid)),
+          (
+            "properties",
+            @json.Json::object(
+              Map([
+                ("docid", @json.Json::string(id)),
+                ("body", @json.Json::string(document.text)),
+                ("meta", @json.Json::string(meta_text)),
+              ]),
+            ),
           ),
-        ),
-        ("vector", @json.Json::array(coordinates)),
-      ]),
-    ).stringify()
+          ("vector", @json.Json::array(coordinates)),
+        ]),
+      )
+      |> @moonjson.dumps
     let (code, text) = call(
       @http.RequestMethod::Post,
       self.base + "/v1/objects",

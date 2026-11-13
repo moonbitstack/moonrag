@@ -160,15 +160,18 @@ fn vector_of(value : @json.Json) -> Array[Double] {
 /// Create the collection (or reuse one of the same name) and remember the id Chroma assigns it.
 pub async fn ChromaStore::create(self : ChromaStore) -> Unit {
   let body = @json.Json::object(
-    Map([
-      ("name", @json.Json::string(self.collection)),
-      (
-        "metadata",
-        @json.Json::object(Map([("hnsw:space", @json.Json::string("cosine"))])),
-      ),
-      ("get_or_create", @json.Json::boolean(true)),
-    ]),
-  ).stringify()
+      Map([
+        ("name", @json.Json::string(self.collection)),
+        (
+          "metadata",
+          @json.Json::object(
+            Map([("hnsw:space", @json.Json::string("cosine"))]),
+          ),
+        ),
+        ("get_or_create", @json.Json::boolean(true)),
+      ]),
+    )
+    |> @moonjson.dumps
   let (code, text) = call(
     @http.RequestMethod::Post,
     self.collections_url(),
@@ -177,7 +180,7 @@ pub async fn ChromaStore::create(self : ChromaStore) -> Unit {
   guard code >= 200 && code < 300 else {
     raise @moonrag.Malformed(at=0, why="chroma create: " + code.to_string())
   }
-  let id = match @json.parse(text) {
+  let id = match @moonjson.loads(text[:], @moonjson.strict) {
     @json.Json::Object(fields) =>
       match fields.get("id") {
         Some(@json.Json::String(s)) => s
@@ -200,7 +203,8 @@ pub async fn ChromaStore::clear(self : ChromaStore) -> Unit {
     for id in ids {
       array.push(@json.Json::string(id))
     }
-    let body = @json.Json::object(Map([("ids", @json.Json::array(array))])).stringify()
+    let body = @json.Json::object(Map([("ids", @json.Json::array(array))]))
+      |> @moonjson.dumps
     let _ = call(@http.RequestMethod::Post, self.item_url("/delete"), body)
   }
 }
@@ -208,11 +212,12 @@ pub async fn ChromaStore::clear(self : ChromaStore) -> Unit {
 ///|
 async fn ChromaStore::all_ids(self : ChromaStore) -> Array[String] {
   let body = @json.Json::object(
-    Map([
-      ("include", @json.Json::array([])),
-      ("limit", @json.Json::number(10000.0)),
-    ]),
-  ).stringify()
+      Map([
+        ("include", @json.Json::array([])),
+        ("limit", @json.Json::number(10000.0)),
+      ]),
+    )
+    |> @moonjson.dumps
   let (code, text) = call(
     @http.RequestMethod::Post,
     self.item_url("/get"),
@@ -221,7 +226,7 @@ async fn ChromaStore::all_ids(self : ChromaStore) -> Array[String] {
   guard code >= 200 && code < 300 else {
     raise @moonrag.Malformed(at=0, why="chroma get: " + code.to_string())
   }
-  match @json.parse(text) {
+  match @moonjson.loads(text[:], @moonjson.strict) {
     @json.Json::Object(fields) => strings_of(fields.get("ids"))
     _ => []
   }
@@ -234,7 +239,7 @@ pub async fn ChromaStore::len(self : ChromaStore) -> Int64 {
   guard code >= 200 && code < 300 else {
     raise @moonrag.Malformed(at=0, why="chroma count: " + code.to_string())
   }
-  match @json.parse(text) {
+  match @moonjson.loads(text[:], @moonjson.strict) {
     @json.Json::Number(n, ..) => n.to_int64()
     _ => 0L
   }
@@ -270,13 +275,14 @@ pub impl @moonrag.VectorStore for ChromaStore with fn add(self, documents) {
     metadatas.push(@json.Json::object(document.meta.copy()))
   }
   let body = @json.Json::object(
-    Map([
-      ("ids", @json.Json::array(ids)),
-      ("embeddings", @json.Json::array(embeddings)),
-      ("documents", @json.Json::array(texts)),
-      ("metadatas", @json.Json::array(metadatas)),
-    ]),
-  ).stringify()
+      Map([
+        ("ids", @json.Json::array(ids)),
+        ("embeddings", @json.Json::array(embeddings)),
+        ("documents", @json.Json::array(texts)),
+        ("metadatas", @json.Json::array(metadatas)),
+      ]),
+    )
+    |> @moonjson.dumps
   let (code, _text) = call(
     @http.RequestMethod::Post,
     self.item_url("/upsert"),
@@ -298,7 +304,8 @@ pub impl @moonrag.VectorStore for ChromaStore with fn delete(self, ids) {
   for id in ids {
     array.push(@json.Json::string(id))
   }
-  let body = @json.Json::object(Map([("ids", @json.Json::array(array))])).stringify()
+  let body = @json.Json::object(Map([("ids", @json.Json::array(array))]))
+    |> @moonjson.dumps
   let _ = call(@http.RequestMethod::Post, self.item_url("/delete"), body)
 }
 
@@ -318,18 +325,19 @@ pub impl @moonrag.VectorStore for ChromaStore with fn search(
     return []
   }
   let body = @json.Json::object(
-    Map([
-      (
-        "include",
-        @json.Json::array([
-          @json.Json::string("documents"),
-          @json.Json::string("metadatas"),
-          @json.Json::string("embeddings"),
-        ]),
-      ),
-      ("limit", @json.Json::number(10000.0)),
-    ]),
-  ).stringify()
+      Map([
+        (
+          "include",
+          @json.Json::array([
+            @json.Json::string("documents"),
+            @json.Json::string("metadatas"),
+            @json.Json::string("embeddings"),
+          ]),
+        ),
+        ("limit", @json.Json::number(10000.0)),
+      ]),
+    )
+    |> @moonjson.dumps
   let (code, text) = call(
     @http.RequestMethod::Post,
     self.item_url("/get"),
@@ -338,7 +346,7 @@ pub impl @moonrag.VectorStore for ChromaStore with fn search(
   guard code >= 200 && code < 300 else {
     raise @moonrag.Malformed(at=0, why="chroma get: " + code.to_string())
   }
-  let root = match @json.parse(text) {
+  let root = match @moonjson.loads(text[:], @moonjson.strict) {
     @json.Json::Object(fields) => fields
     _ => Map([])
   }

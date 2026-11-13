@@ -78,7 +78,7 @@ fn hashable_meta(meta : Map[String, @json.Json], source_key : String) -> String 
   let parts : Array[String] = []
   for key in keys {
     match meta.get(key) {
-      Some(value) => parts.push(key + "=" + value.stringify())
+      Some(value) => parts.push(key + "=" + @moonjson.dumps(value))
       None => ()
     }
   }

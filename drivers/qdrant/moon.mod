@@ -18,5 +18,6 @@ preferred_target = "native"
 
 import {
   "moonbitstack/moonrag@0.1.1",
+  "moonbitstack/moonjson@0.5.0",
   "moonbitlang/async@0.22.5",
 }
