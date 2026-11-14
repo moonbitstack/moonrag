@@ -1209,8 +1209,10 @@ footer .spacer {
     padding: 0 18px;
   }
   header nav {
-    gap: 14px;
+    gap: 6px 14px;
     font-size: 12px;
+    flex-wrap: wrap;
+    min-width: 0;
   }
   header nav a.hide-sm {
     display: none;
