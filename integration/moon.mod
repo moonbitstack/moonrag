@@ -33,7 +33,7 @@ import {
   "moonbitlang/async@0.22.5",
   "moonbitstack/moondb@0.3.0",
   "moonbitstack/moonpostgres@0.7.0",
-  "moonbitstack/moonrag@0.1.1",
+  "moonbitstack/moonrag@0.2.0",
   "moonbitstack/moonqdrant@0.0.1",
   "moonbitstack/moonchroma@0.0.1",
   "moonbitstack/moonweavte@0.0.1",
