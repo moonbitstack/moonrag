@@ -93,7 +93,7 @@
   meta : Map[String, @json.Json]
 }</code></pre>
 <div class="member" id="moonrag-document-derived"><pre class="sig scroll"><code>pub fn Document::derived(Self, Int32, String, start_index? : Int32) -&gt; Self</code></pre><p>A document cut out of <code>parent</code>: same metadata plus the chunk number, a derived id when the parent had one, and the offset it started at when the splitter knows it.  Splitters are not the only producers of chunks — a caller streaming pages out of a PDF has the same needs — so the bookkeeping lives here rather than in each of them.</p></div>
-<div class="member" id="moonrag-document-from_json"><pre class="sig scroll"><code>pub fn Document::from_json(@json.Json, @json.JsonPath) -&gt; Self raise @json.JsonDecodeError</code></pre></div>
+<div class="member" id="moonrag-document-from_json"><pre class="sig scroll"><code>pub fn Document::from_json(@json.Json, @json.DecodeContext) -&gt; Self raise @json.JsonDecodeError</code></pre></div>
 <div class="member" id="moonrag-document-meta_of"><pre class="sig scroll"><code>pub fn Document::meta_of(Self, String) -&gt; @json.Json?</code></pre><p>The metadata value stored under <code>key</code>, or <code>None</code>.</p></div>
 <div class="member" id="moonrag-document-new"><pre class="sig scroll"><code>pub fn Document::new(String, id? : String, meta? : Map[String, @json.Json]) -&gt; Self</code></pre><p>A document with <code>text</code>, no identity, and no metadata.</p></div>
 <div class="member" id="moonrag-document-set_meta"><pre class="sig scroll"><code>pub fn Document::set_meta(Self, String, @json.Json) -&gt; Self</code></pre><p>The same document with <code>key</code> set to <code>value</code>; a key already present is replaced.</p></div>
@@ -169,7 +169,7 @@
   score : Double
 }</code></pre>
 <div class="member" id="moonrag-scored-documents"><pre class="sig scroll"><code>pub fn Scored::documents(ArrayView[Self]) -&gt; Array[Document]</code></pre><p>The documents in <code>hits</code>, dropping the scores.</p></div>
-<div class="member" id="moonrag-scored-from_json"><pre class="sig scroll"><code>pub fn Scored::from_json(@json.Json, @json.JsonPath) -&gt; Self raise @json.JsonDecodeError</code></pre></div>
+<div class="member" id="moonrag-scored-from_json"><pre class="sig scroll"><code>pub fn Scored::from_json(@json.Json, @json.DecodeContext) -&gt; Self raise @json.JsonDecodeError</code></pre></div>
 <div class="member" id="moonrag-scored-to_json"><pre class="sig scroll"><code>pub fn Scored::to_json(Self) -&gt; @json.Json</code></pre></div>
 </article>
 <article class="api" id="moonrag-similarityretriever"><h3><span class="kind">struct</span>SimilarityRetriever</h3>
