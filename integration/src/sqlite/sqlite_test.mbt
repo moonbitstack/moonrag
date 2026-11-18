@@ -5,9 +5,7 @@
 ///|
 /// A store over a fresh in-memory database: each `:memory:` connection is its own database, so a case
 /// never sees what the previous one wrote.
-async fn fresh_store(
-  embedder : &@moonrag.Embedder,
-) -> &@moonrag.VectorStore raise {
+async fn fresh_store(embedder : &@moonrag.Embedder) -> &@moonrag.VectorStore {
   let driver = @moonsqlite.SqliteDriver::open(":memory:")
   let store = @sql.SqlVectorStore::new(
     @blocking.Blocking::new(driver),
@@ -22,10 +20,7 @@ async fn fresh_store(
 ///|
 async test "the vector-store standard cases hold on SQLite" {
   let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
-  let failures = @standard.check(
-    embedder,
-    async fn() { fresh_store(embedder) },
-  )
+  let failures = @standard.check(embedder, async fn() { fresh_store(embedder) })
   if failures.length() > 0 {
     abort(failures.join("\n"))
   }

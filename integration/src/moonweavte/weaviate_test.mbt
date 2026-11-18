@@ -14,9 +14,7 @@ fn setting(name : String, fallback : String) -> String {
 
 ///|
 /// A store over a freshly emptied class.
-async fn fresh_store(
-  embedder : &@moonrag.Embedder,
-) -> &@moonrag.VectorStore raise {
+async fn fresh_store(embedder : &@moonrag.Embedder) -> &@moonrag.VectorStore {
   let store = @wstore.WeaviateStore::new(
     setting("MOONRAG_WEAVIATE_URL", "http://127.0.0.1:8080"),
     embedder,
@@ -37,10 +35,7 @@ async test "the vector-store standard cases hold on Weaviate" {
     return
   }
   let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
-  let failures = @standard.check(
-    embedder,
-    async fn() { fresh_store(embedder) },
-  )
+  let failures = @standard.check(embedder, async fn() { fresh_store(embedder) })
   if failures.length() > 0 {
     abort(failures.join("\n"))
   }

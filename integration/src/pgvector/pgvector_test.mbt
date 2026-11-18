@@ -48,7 +48,7 @@ fn parse_port(text : String) -> Int32 {
 
 ///|
 /// A connection to the server named by the environment, with the defaults a local container has.
-async fn connect() -> @moonpostgres.PgConn raise {
+async fn connect() -> @moonpostgres.PgConn {
   @moonpostgres.PgConn::connect(
     setting("MOONRAG_PG_HOST", "127.0.0.1"),
     port(),
@@ -60,9 +60,7 @@ async fn connect() -> @moonpostgres.PgConn raise {
 
 ///|
 /// A store over a cleared table, so a case never sees what the previous one wrote.
-async fn fresh_store(
-  embedder : &@moonrag.Embedder,
-) -> &@moonrag.VectorStore raise {
+async fn fresh_store(embedder : &@moonrag.Embedder) -> &@moonrag.VectorStore {
   let store = @sql.SqlVectorStore::new(
     connect(),
     embedder,
@@ -77,14 +75,13 @@ async fn fresh_store(
 ///|
 async test "the vector-store standard cases hold on pgvector" {
   if !live() {
-    println("skipped: set MOONRAG_LIVE=1 and point MOONRAG_PG_* at a PostgreSQL with pgvector")
+    println(
+      "skipped: set MOONRAG_LIVE=1 and point MOONRAG_PG_* at a PostgreSQL with pgvector",
+    )
     return
   }
   let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
-  let failures = @standard.check(
-    embedder,
-    async fn() { fresh_store(embedder) },
-  )
+  let failures = @standard.check(embedder, async fn() { fresh_store(embedder) })
   if failures.length() > 0 {
     abort(failures.join("\n"))
   }
@@ -110,7 +107,7 @@ async test "the vectors are really in a pgvector column" {
   let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
   let store = fresh_store(embedder)
   let _ = store.add([@moonrag.Document::new("the harbour at dawn", id="a")])
-  let rows = (connect()).query(
+  let rows = connect().query(
     "SELECT format_type(a.atttypid, a.atttypmod) FROM pg_attribute a" +
     " WHERE a.attrelid = '" +
     table +
@@ -136,7 +133,7 @@ async test "the score is the one the database computed" {
   let query = embedder.embed(["fishing boats in the harbour"])[0]
   let hits = store.search(query[:], limit=2)
   let literal = literal_of(query[:])
-  let rows = (connect()).query(
+  let rows = connect().query(
     "SELECT 1 - (\"embedding\" <=> $1::vector) FROM \"" +
     table +
     "\" WHERE \"id\" = $2",

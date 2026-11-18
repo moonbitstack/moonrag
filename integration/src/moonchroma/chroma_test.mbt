@@ -14,9 +14,7 @@ fn setting(name : String, fallback : String) -> String {
 
 ///|
 /// A store over a freshly emptied collection.
-async fn fresh_store(
-  embedder : &@moonrag.Embedder,
-) -> &@moonrag.VectorStore raise {
+async fn fresh_store(embedder : &@moonrag.Embedder) -> &@moonrag.VectorStore {
   let store = @cstore.ChromaStore::new(
     setting("MOONRAG_CHROMA_URL", "http://127.0.0.1:8000"),
     embedder,
@@ -37,10 +35,7 @@ async test "the vector-store standard cases hold on Chroma" {
     return
   }
   let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
-  let failures = @standard.check(
-    embedder,
-    async fn() { fresh_store(embedder) },
-  )
+  let failures = @standard.check(embedder, async fn() { fresh_store(embedder) })
   if failures.length() > 0 {
     abort(failures.join("\n"))
   }

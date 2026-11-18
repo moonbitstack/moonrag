@@ -10,7 +10,11 @@ priv suberror Failed {
 
 ///|
 /// Record a mismatch as a readable sentence instead of a bare boolean.
-fn expect_string(got : String, want : String, what : String) -> Unit raise Failed {
+fn expect_string(
+  got : String,
+  want : String,
+  what : String,
+) -> Unit raise Failed {
   if got != want {
     raise Failed(what + ": want [" + want + "], got [" + got + "]")
   }
@@ -19,7 +23,9 @@ fn expect_string(got : String, want : String, what : String) -> Unit raise Faile
 ///|
 fn expect_int(got : Int32, want : Int32, what : String) -> Unit raise Failed {
   if got != want {
-    raise Failed(what + ": want " + want.to_string() + ", got " + got.to_string())
+    raise Failed(
+      what + ": want " + want.to_string() + ", got " + got.to_string(),
+    )
   }
 }
 
@@ -41,7 +47,14 @@ fn expect_strings(
   for i, value in got {
     if value != want[i] {
       raise Failed(
-        what + ": entry " + i.to_string() + ": want [" + want[i] + "], got [" + value + "]",
+        what +
+        ": entry " +
+        i.to_string() +
+        ": want [" +
+        want[i] +
+        "], got [" +
+        value +
+        "]",
       )
     }
   }
@@ -59,7 +72,7 @@ fn expect_true(condition : Bool, what : String) -> Unit raise Failed {
 /// the failures collected so far.
 pub struct Suite {
   embedder : &@moonrag.Embedder
-  fresh : async () -> &@moonrag.VectorStore raise
+  fresh : async () -> &@moonrag.VectorStore
   failures : Array[String]
   mut current : String
 }
@@ -68,7 +81,7 @@ pub struct Suite {
 async fn Suite::case(
   self : Suite,
   name : String,
-  body : async () -> Unit raise,
+  body : async () -> Unit,
 ) -> Unit {
   self.current = name
   let outcome = try {
@@ -96,10 +109,7 @@ fn sorted_ids(hits : Array[@moonrag.Scored]) -> Array[String] {
 /// The metadata filters the filter case runs, each against the in-memory store as the reference.
 fn filters() -> Array[(String, @moonrag.Filter)] {
   [
-    (
-      "equal",
-      @moonrag.Filter::Equal("topic", @json.Json::string("sea")),
-    ),
+    ("equal", @moonrag.Filter::Equal("topic", @json.Json::string("sea"))),
     (
       "one of",
       @moonrag.Filter::OneOf("topic", [
@@ -142,7 +152,7 @@ fn filters() -> Array[(String, @moonrag.Filter)] {
 /// Run every standard case, returning one line per failure — empty when the backend behaves.
 pub async fn check(
   embedder : &@moonrag.Embedder,
-  fresh : async () -> &@moonrag.VectorStore raise,
+  fresh : async () -> &@moonrag.VectorStore,
 ) -> Array[String] {
   let suite : Suite = { embedder, fresh, failures: [], current: "", }
 
@@ -161,7 +171,7 @@ pub async fn check(
   suite.case("search returns the documents the query is about", async fn() {
     let store = (suite.fresh)()
     let _ = store.add(corpus())
-    let query = (suite.embedder).embed([sea_query()])[0]
+    let query = suite.embedder.embed([sea_query()])[0]
     let hits = store.search(query[:], limit=2)
     expect_int(hits.length(), 2, "hits")
     for hit in hits {
@@ -176,36 +186,42 @@ pub async fn check(
   suite.case("every hit carries its score, and scores descend", async fn() {
     let store = (suite.fresh)()
     let _ = store.add(corpus())
-    let query = (suite.embedder).embed([sea_query()])[0]
+    let query = suite.embedder.embed([sea_query()])[0]
     let hits = store.search(query[:], limit=4)
     for hit in hits {
       expect_true(hit.score <= 1.0, "a score above one")
       expect_true(hit.score >= -1.0, "a score below minus one")
     }
     for i = 1; i < hits.length(); i = i + 1 {
-      expect_true(hits[i - 1].score >= hits[i].score, "scores are not descending")
+      expect_true(
+        hits[i - 1].score >= hits[i].score,
+        "scores are not descending",
+      )
     }
   })
 
-  suite.case("the limit is honoured, and a limit above the corpus returns the corpus", async fn() {
-    let store = (suite.fresh)()
-    let _ = store.add(corpus())
-    let query = (suite.embedder).embed([sea_query()])[0]
-    expect_int(store.search(query[:], limit=1).length(), 1, "limit 1")
-    expect_int(store.search(query[:], limit=10).length(), 4, "limit 10")
-    expect_int(store.search(query[:], limit=0).length(), 0, "limit 0")
-  })
+  suite.case(
+    "the limit is honoured, and a limit above the corpus returns the corpus",
+    async fn() {
+      let store = (suite.fresh)()
+      let _ = store.add(corpus())
+      let query = suite.embedder.embed([sea_query()])[0]
+      expect_int(store.search(query[:], limit=1).length(), 1, "limit 1")
+      expect_int(store.search(query[:], limit=10).length(), 4, "limit 10")
+      expect_int(store.search(query[:], limit=0).length(), 0, "limit 0")
+    },
+  )
 
   suite.case("an empty store returns nothing", async fn() {
     let store = (suite.fresh)()
-    let query = (suite.embedder).embed([sea_query()])[0]
+    let query = suite.embedder.embed([sea_query()])[0]
     expect_int(store.search(query[:], limit=5).length(), 0, "hits")
   })
 
   suite.case("ids come back with the hits", async fn() {
     let store = (suite.fresh)()
     let _ = store.add(corpus_with_ids())
-    let query = (suite.embedder).embed([sea_query()])[0]
+    let query = suite.embedder.embed([sea_query()])[0]
     let hits = store.search(query[:], limit=4)
     expect_strings(
       sorted_ids(hits),
@@ -218,7 +234,7 @@ pub async fn check(
     let store = (suite.fresh)()
     let ids = store.add(corpus_with_ids())
     store.delete([ids[1]][:])
-    let query = (suite.embedder).embed([land_query()])[0]
+    let query = suite.embedder.embed([land_query()])[0]
     let hits = store.search(query[:], limit=10)
     expect_int(hits.length(), 3, "hits")
     expect_true(
@@ -229,13 +245,9 @@ pub async fn check(
 
   suite.case("adding an id twice replaces the document", async fn() {
     let store = (suite.fresh)()
-    let _ = store.add([
-      @moonrag.Document::new("the old text", id="same"),
-    ])
-    let _ = store.add([
-      @moonrag.Document::new("the new text", id="same"),
-    ])
-    let query = (suite.embedder).embed(["the new text"])[0]
+    let _ = store.add([@moonrag.Document::new("the old text", id="same")])
+    let _ = store.add([@moonrag.Document::new("the new text", id="same")])
+    let query = suite.embedder.embed(["the new text"])[0]
     let hits = store.search(query[:], limit=10)
     expect_int(hits.length(), 1, "hits")
     expect_string(hits[0].document.text, "the new text", "the surviving text")
@@ -246,12 +258,12 @@ pub async fn check(
     let _ = store.add(corpus_with_ids())
     let reference = @moonrag.InMemoryVectorStore::new(suite.embedder)
     let _ = reference.add(corpus_with_ids())
-    let query = (suite.embedder).embed([sea_query()])[0]
+    let query = suite.embedder.embed([sea_query()])[0]
     for entry in filters() {
       let name = entry.0
       let filter = entry.1
-      let got = store.search(query[:], limit=10, filter=filter)
-      let want = reference.search(query[:], limit=10, filter=filter)
+      let got = store.search(query[:], limit=10, filter~)
+      let want = reference.search(query[:], limit=10, filter~)
       expect_strings(sorted_ids(got), sorted_ids(want), "filter " + name)
     }
   })
@@ -275,13 +287,13 @@ pub async fn check(
     let backward = (suite.fresh)()
     let reversed = corpus_with_ids().rev()
     let _ = backward.add(reversed)
-    let query = (suite.embedder).embed([land_query()])[0]
-    let left = forward.search(query[:], limit=4).map(fn(hit) {
-      hit.document.text
-    })
-    let right = backward.search(query[:], limit=4).map(fn(hit) {
-      hit.document.text
-    })
+    let query = suite.embedder.embed([land_query()])[0]
+    let left = forward
+      .search(query[:], limit=4)
+      .map(fn(hit) { hit.document.text })
+    let right = backward
+      .search(query[:], limit=4)
+      .map(fn(hit) { hit.document.text })
     expect_strings(left, right, "the ranking")
   })
 

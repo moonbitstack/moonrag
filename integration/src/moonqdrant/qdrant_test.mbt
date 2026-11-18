@@ -18,9 +18,7 @@ fn setting(name : String, fallback : String) -> String {
 
 ///|
 /// A store over a freshly emptied collection, so a case never sees what the previous one wrote.
-async fn fresh_store(
-  embedder : &@moonrag.Embedder,
-) -> &@moonrag.VectorStore raise {
+async fn fresh_store(embedder : &@moonrag.Embedder) -> &@moonrag.VectorStore {
   let store = @qstore.QdrantStore::new(
     setting("MOONRAG_QDRANT_URL", "http://127.0.0.1:6333"),
     embedder,
@@ -41,10 +39,7 @@ async test "the vector-store standard cases hold on Qdrant" {
     return
   }
   let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
-  let failures = @standard.check(
-    embedder,
-    async fn() { fresh_store(embedder) },
-  )
+  let failures = @standard.check(embedder, async fn() { fresh_store(embedder) })
   if failures.length() > 0 {
     abort(failures.join("\n"))
   }

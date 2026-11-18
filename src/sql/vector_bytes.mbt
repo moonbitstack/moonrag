@@ -7,7 +7,7 @@
 ///|
 /// `vector` as little-endian `f64` bytes.
 fn encode_vector(vector : ArrayView[Double]) -> Bytes {
-  let buffer = @buffer.Buffer::Buffer(size_hint=vector.length() * 8)
+  let buffer = @buffer.Buffer::Buffer(capacity=vector.length() * 8)
   for value in vector {
     buffer.write_double_le(value)
   }

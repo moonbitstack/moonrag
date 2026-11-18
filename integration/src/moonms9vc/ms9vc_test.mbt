@@ -52,7 +52,7 @@ fn parse_port(text : String) -> Int32 {
 
 ///|
 /// A connection to the server named by the environment, with the defaults a local container has.
-async fn connect() -> @client.MysqlConn raise {
+async fn connect() -> @client.MysqlConn {
   @client.MysqlConn::connect(
     setting("MOONRAG_MYSQL_HOST", "127.0.0.1"),
     port(),
@@ -64,9 +64,7 @@ async fn connect() -> @client.MysqlConn raise {
 
 ///|
 /// A store over a cleared table, so a case never sees what the previous one wrote.
-async fn fresh_store(
-  embedder : &@moonrag.Embedder,
-) -> &@moonrag.VectorStore raise {
+async fn fresh_store(embedder : &@moonrag.Embedder) -> &@moonrag.VectorStore {
   let store = @sql.SqlVectorStore::new(
     connect(),
     embedder,
@@ -88,7 +86,8 @@ fn decode_vector_string(text : String) -> Array[Double] raise {
       for item in items {
         match item {
           @json.Json::Number(value, ..) => out.push(value)
-          _ => raise @moonrag.Malformed(at=3, why="vector entry is not a number")
+          _ =>
+            raise @moonrag.Malformed(at=3, why="vector entry is not a number")
         }
       }
       out
@@ -100,14 +99,13 @@ fn decode_vector_string(text : String) -> Array[Double] raise {
 ///|
 async test "the vector-store standard cases hold on MySQL 9" {
   if !live() {
-    println("skipped: set MOONRAG_LIVE=1 and point MOONRAG_MYSQL_* at a MySQL 9 server")
+    println(
+      "skipped: set MOONRAG_LIVE=1 and point MOONRAG_MYSQL_* at a MySQL 9 server",
+    )
     return
   }
   let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
-  let failures = @standard.check(
-    embedder,
-    async fn() { fresh_store(embedder) },
-  )
+  let failures = @standard.check(embedder, async fn() { fresh_store(embedder) })
   if failures.length() > 0 {
     abort(failures.join("\n"))
   }
@@ -122,7 +120,7 @@ async test "the vectors are really in a MySQL 9 VECTOR column" {
   let embedder : &@moonrag.Embedder = @moonrag.HashingEmbedder::new()
   let _ = fresh_store(embedder)
   let database = setting("MOONRAG_MYSQL_DATABASE", "moonrag")
-  let rows = (connect()).query(
+  let rows = connect().query(
     "SELECT COLUMN_TYPE FROM information_schema.columns" +
     " WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = 'embedding'",
     [@moondb.Value::Text(database), @moondb.Value::Text(table)],
@@ -147,7 +145,7 @@ async test "the score is the one the stored vector yields" {
   let hits = store.search(query[:], limit=2)
   // Read the vector straight out of the VECTOR column and score it the way the store does: the store
   // reports the cosine of the stored vector, not an approximation it computed elsewhere.
-  let rows = (connect()).query(
+  let rows = connect().query(
     "SELECT VECTOR_TO_STRING(`embedding`) FROM `" + table + "` WHERE `id` = ?",
     [@moondb.Value::Text("a")],
   )

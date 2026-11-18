@@ -48,7 +48,7 @@ pub(all) struct Document {
 }
 pub fn Document::derived(Self, Int32, String, start_index? : Int32) -> Self
 pub fn Document::equal(Self, Self) -> Bool
-pub fn Document::from_json(@json.Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn Document::from_json(@json.Json, @json.DecodeContext) -> Self raise @json.JsonDecodeError
 pub fn Document::meta_of(Self, String) -> @json.Json?
 pub fn Document::new(String, id? : String, meta? : Map[String, @json.Json]) -> Self
 pub fn Document::not_equal(Self, Self) -> Bool
@@ -131,7 +131,7 @@ pub(all) struct Scored {
 }
 pub fn Scored::documents(ArrayView[Self]) -> Array[Document]
 pub fn Scored::equal(Self, Self) -> Bool
-pub fn Scored::from_json(@json.Json, @json.JsonPath) -> Self raise @json.JsonDecodeError
+pub fn Scored::from_json(@json.Json, @json.DecodeContext) -> Self raise @json.JsonDecodeError
 pub fn Scored::not_equal(Self, Self) -> Bool
 pub fn Scored::to_json(Self) -> @json.Json
 pub fn Scored::to_repr(Self) -> @debug.Repr
